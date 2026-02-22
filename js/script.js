@@ -1,0 +1,729 @@
+// --- GAME STATE ---
+let unlockedLevel = 1;
+let currentLevel = 1;
+let draggedBlock = null;
+let typewriterInterval = null;
+let fullStoryText = "";
+let isTyping = false;
+
+// --- LEVEL DATA ---
+const levelsData = {
+    1: {
+        title: "Level 1: Basic Concepts",
+        shortTitle: "พื้นฐานและการแสดงผล",
+        icon: "💡",
+        workspaceType: "sequence",
+        scenario: "> ระบบเริ่มทำงาน...\n> ในเกมเป็นเวลากลางคืน ฟาร์มมืดสนิท\n> ภารกิจ (The Dark Night): ทดสอบหน้าจอ LED โดยแสดงข้อความ 'LIGHT ON' และชื่อของคุณเป็นภาษาอังกฤษ!",
+        desc: "ลากบล็อกคำสั่งเรียงตามลำดับเพื่อทำงานแบบเป็นขั้นเป็นตอน (Sequence):\n1. พิมพ์และแสดงผลข้อความ 'LIGHT ON' (ตัวพิมพ์ใหญ่เป๊ะๆ)\n2. หน่วงเวลา (Delay) 2 วินาที\n3. พิมพ์และแสดงผลชื่อภาษาอังกฤษของคุณ (ห้ามซ้ำกับ LIGHT ON)",
+        blocks: [
+            { text: 'LED 16x8 = ', isInput: true, placeholder: 'พิมพ์ข้อความ...', type: 'action-led', class: 'action-block' },
+            { text: 'Delay 2 sec', isInput: false, type: 'delay', class: 'delay-block' },
+            { text: 'LED 16x8 = ', isInput: true, placeholder: 'พิมพ์ชื่อ (Eng)...', type: 'action-led', class: 'action-block' } 
+        ]
+    },
+    2: {
+        title: "Level 2: Sensors & Logic",
+        shortTitle: "การรับค่าและเงื่อนไข",
+        icon: "🌡️",
+        workspaceType: "dynamic-ifelse",
+        scenario: "> ประกาศเตือนภัยฉุกเฉินระดับ 2!\n> แถบวัดอุณหภูมิในเกมพุ่งสูงขึ้น (Temp > 30) ต้นไม้เริ่มเหี่ยว\n> ภารกิจ (Heat Wave Alert): ใช้บล็อก If-Else อ่านค่า Temperature Sensor เพื่อควบคุมพัดลม",
+        desc: "การใช้บล็อกคำสั่งทางตรรกะ (Logic):\n1. ลากบล็อกโครงสร้าง **IF...DO...ELSE** ไปวางในพื้นที่ทำงานก่อน\n2. ลากบล็อกเซนเซอร์และพัดลมไปใส่ในช่องว่างให้สมบูรณ์\n\n* สามารถคลิกเพื่อปรับเปลี่ยนตัวเลข และสถานะ ON/OFF ได้",
+        blocks: [
+            { type: 'structure-ifelse', class: 'structure-block', text: 'IF ... DO ... ELSE' },
+            { type: 'sensor', class: 'sensor-block', isComplex: true,
+                html: `<div class="flex items-center justify-center w-full"><span class="sensor-type hidden">temp</span>Temp <select class="op-sel text-gray-900 bg-white px-1 py-0.5 rounded mx-2 font-bold shadow-sm outline-none cursor-pointer text-sm"><option value=">">&gt;</option><option value="<">&lt;</option><option value="=">=</option></select> <input type="number" class="val-input text-gray-900 bg-white px-2 py-0.5 rounded w-16 text-sm font-bold text-center shadow-sm outline-none" placeholder="°C"></div>` },
+            { type: 'action', class: 'action-block', isComplex: true,
+                html: `<div class="flex items-center justify-center w-full"><span class="action-type hidden">fan</span>Fan <span class="mx-2 font-bold text-green-100">=</span> <select class="stat-sel text-gray-900 bg-white px-2 py-0.5 rounded font-bold shadow-sm outline-none cursor-pointer text-sm"><option value="ON">ON</option><option value="OFF">OFF</option></select></div>` },
+            { type: 'action', class: 'action-block', isComplex: true,
+                html: `<div class="flex items-center justify-center w-full"><span class="action-type hidden">fan</span>Fan <span class="mx-2 font-bold text-green-100">=</span> <select class="stat-sel text-gray-900 bg-white px-2 py-0.5 rounded font-bold shadow-sm outline-none cursor-pointer text-sm"><option value="OFF">OFF</option><option value="ON">ON</option></select></div>` }
+        ]
+    },
+    3: {
+        title: "Level 3: Automation Challenge",
+        shortTitle: "ตรรกะเชิงซ้อนแบบสมบูรณ์",
+        icon: "⚙️",
+        workspaceType: "dynamic-ifelse",
+        scenario: "> เข้าสู่ระบบอัตโนมัติขั้นสูง...\n> ระบบต้องการการดูแลอัตโนมัติสมบูรณ์แบบ ทั้งแสงและอุณหภูมิ\n> ภารกิจ (Smart System): เขียนโปรแกรมรวมโดยใช้บล็อกตรรกะ (AND) ควบคุม 2 ระบบพร้อมกัน!",
+        desc: "1. ลากโครงสร้าง **IF...DO...ELSE** ไปวางในพื้นที่ทำงาน\n2. ลากบล็อกตรรกะ **[ ] AND/OR [ ]** สีม่วงไปวางใส่ในช่อง IF\n3. ประกอบเซนเซอร์และอุปกรณ์ให้ครบถ้วน\n\nเงื่อนไข: ถ้า (อุณหภูมิ > 30) AND (แสง < 30) ให้เปิดพัดลมและไฟพร้อมกัน มิฉะนั้นปิดทั้งหมด",
+        blocks: [
+            { type: 'structure-ifelse', class: 'structure-block', text: 'IF ... DO ... ELSE' },
+            { type: 'logic-and', class: 'logic-block', text: '[ ] AND / OR [ ]' },
+            { type: 'sensor', class: 'sensor-block', isComplex: true,
+                html: `<div class="flex items-center justify-center w-full"><span class="sensor-type hidden">temp</span>Temp <select class="op-sel text-gray-900 bg-white px-1 py-0.5 rounded mx-1 font-bold shadow-sm outline-none cursor-pointer text-sm"><option value=">">&gt;</option><option value="<">&lt;</option><option value="=">=</option></select> <input type="number" class="val-input text-gray-900 bg-white px-1 py-0.5 rounded w-14 text-sm font-bold text-center shadow-sm outline-none" placeholder="°C"></div>` },
+            { type: 'sensor', class: 'sensor-block', isComplex: true,
+                html: `<div class="flex items-center justify-center w-full"><span class="sensor-type hidden">light</span>Light <select class="op-sel text-gray-900 bg-white px-1 py-0.5 rounded mx-1 font-bold shadow-sm outline-none cursor-pointer text-sm"><option value=">">&gt;</option><option value="<">&lt;</option><option value="=">=</option></select> <input type="number" class="val-input text-gray-900 bg-white px-1 py-0.5 rounded w-14 text-sm font-bold text-center shadow-sm outline-none" placeholder="Lux"></div>` },
+            { type: 'action', class: 'action-block', isComplex: true,
+                html: `<div class="flex items-center justify-center w-full"><span class="action-type hidden">fan</span>Fan <span class="mx-2 font-bold text-green-100">=</span> <select class="stat-sel text-gray-900 bg-white px-1 py-0.5 rounded font-bold shadow-sm outline-none cursor-pointer text-sm"><option value="ON">ON</option><option value="OFF">OFF</option></select></div>` },
+            { type: 'action', class: 'action-block', isComplex: true,
+                html: `<div class="flex items-center justify-center w-full"><span class="action-type hidden">fan</span>Fan <span class="mx-2 font-bold text-green-100">=</span> <select class="stat-sel text-gray-900 bg-white px-1 py-0.5 rounded font-bold shadow-sm outline-none cursor-pointer text-sm"><option value="OFF">OFF</option><option value="ON">ON</option></select></div>` },
+            { type: 'action', class: 'action-block', isComplex: true,
+                html: `<div class="flex items-center justify-center w-full"><span class="action-type hidden">led</span>LED <span class="mx-2 font-bold text-green-100">=</span> <select class="stat-sel text-gray-900 bg-white px-1 py-0.5 rounded font-bold shadow-sm outline-none cursor-pointer text-sm"><option value="ON">ON</option><option value="OFF">OFF</option></select></div>` },
+            { type: 'action', class: 'action-block', isComplex: true,
+                html: `<div class="flex items-center justify-center w-full"><span class="action-type hidden">led</span>LED <span class="mx-2 font-bold text-green-100">=</span> <select class="stat-sel text-gray-900 bg-white px-1 py-0.5 rounded font-bold shadow-sm outline-none cursor-pointer text-sm"><option value="OFF">OFF</option><option value="ON">ON</option></select></div>` }
+        ]
+    }
+};
+
+// --- NAVIGATION & DOM INJECTION ---
+function showView(viewId) {
+    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+    document.getElementById(viewId).classList.add('active');
+    if (viewId === 'view-levels') renderLevelSelect();
+    if (viewId !== 'view-story') clearInterval(typewriterInterval);
+}
+
+function renderLevelSelect() {
+    const container = document.getElementById('levels-container');
+    container.innerHTML = '';
+    for (let i = 1; i <= 3; i++) {
+        const isLocked = i > unlockedLevel;
+        const data = levelsData[i];
+        const card = document.createElement('div');
+        
+        if (isLocked) {
+            card.className = "bg-gray-100 border-2 border-gray-200 rounded-2xl p-6 flex flex-col items-center justify-center text-gray-400 cursor-not-allowed h-48";
+            card.innerHTML = `<svg class="w-12 h-12 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg><h3 class="text-xl font-bold">Level ${i}</h3><p class="text-sm mt-1">ถูกล็อก</p>`;
+        } else {
+            card.className = "bg-white border-2 border-green-400 rounded-2xl p-6 flex flex-col items-center justify-center text-green-700 cursor-pointer hover:bg-green-50 hover:border-green-500 hover:shadow-lg transition-all transform hover:-translate-y-1 h-48";
+            card.onclick = () => startStory(i);
+            card.innerHTML = `<div class="w-14 h-14 mb-3 bg-green-100 rounded-full flex items-center justify-center text-3xl shadow-inner">${data.icon}</div><h3 class="text-xl font-bold">Level ${i}</h3><p class="text-sm text-center text-gray-600 mt-2 font-medium">${data.shortTitle}</p>`;
+        }
+        container.appendChild(card);
+    }
+}
+
+function startStory(level) {
+    currentLevel = level;
+    const data = levelsData[level];
+    
+    document.getElementById('story-title').innerText = data.title;
+    document.getElementById('story-icon').innerText = data.icon;
+    document.getElementById('start-mission-btn').classList.remove('opacity-100', 'pointer-events-auto');
+    document.getElementById('start-mission-btn').classList.add('opacity-0', 'pointer-events-none');
+    
+    fullStoryText = data.scenario;
+    document.getElementById('story-text').innerHTML = "";
+    showView('view-story');
+    
+    isTyping = true;
+    let i = 0;
+    clearInterval(typewriterInterval);
+    typewriterInterval = setInterval(() => {
+        if (i < fullStoryText.length) {
+            let char = fullStoryText.charAt(i);
+            document.getElementById('story-text').innerHTML += (char === '\n') ? '<br>' : char;
+            i++;
+        } else { finishTypewriter(); }
+    }, 30);
+    
+    preparePuzzle(level);
+}
+
+function skipTypewriter() {
+    if (isTyping) {
+        clearInterval(typewriterInterval);
+        document.getElementById('story-text').innerHTML = fullStoryText.replace(/\n/g, '<br>');
+        finishTypewriter();
+    }
+}
+function finishTypewriter() {
+    isTyping = false;
+    document.getElementById('start-mission-btn').classList.remove('opacity-0', 'pointer-events-none');
+    document.getElementById('start-mission-btn').classList.add('opacity-100', 'pointer-events-auto');
+}
+
+// --- DYNAMIC TEMPLATES ---
+function getIfElseTemplate(level) {
+    let doSlots = level === 3 ? 
+        `<div class="drop-zone w-full bg-white/95 border-2 border-dashed border-purple-300 rounded-lg flex items-center justify-center text-gray-500 text-sm p-2 min-h-[40px] mb-2" id="drop-true1" data-expected="action">คำสั่งอุปกรณ์ 1</div>
+            <div class="drop-zone w-full bg-white/95 border-2 border-dashed border-purple-300 rounded-lg flex items-center justify-center text-gray-500 text-sm p-2 min-h-[40px]" id="drop-true2" data-expected="action">คำสั่งอุปกรณ์ 2</div>` : 
+        `<div class="drop-zone w-full bg-white/95 border-2 border-dashed border-purple-300 rounded-lg flex items-center justify-center text-gray-500 text-sm p-2 min-h-[40px]" id="drop-true1" data-expected="action">วางคำสั่งเมื่อเป็นจริง</div>`;
+        
+    let elseSlots = level === 3 ? 
+        `<div class="drop-zone w-full bg-white/95 border-2 border-dashed border-purple-300 rounded-lg flex items-center justify-center text-gray-500 text-sm p-2 min-h-[40px] mb-2" id="drop-false1" data-expected="action">คำสั่งอุปกรณ์ 3</div>
+            <div class="drop-zone w-full bg-white/95 border-2 border-dashed border-purple-300 rounded-lg flex items-center justify-center text-gray-500 text-sm p-2 min-h-[40px]" id="drop-false2" data-expected="action">คำสั่งอุปกรณ์ 4</div>` : 
+        `<div class="drop-zone w-full bg-white/95 border-2 border-dashed border-purple-300 rounded-lg flex items-center justify-center text-gray-500 text-sm p-2 min-h-[40px]" id="drop-false1" data-expected="action">วางคำสั่งเมื่อเป็นเท็จ</div>`;
+
+    let condExpected = level === 3 ? 'logic-and' : 'sensor';
+    let condText = level === 3 ? 'วางบล็อกตรรกะ [AND/OR] สีม่วง' : 'วางเซนเซอร์ (Condition)';
+
+    return `
+    <div class="bg-[#9333ea] rounded-xl p-4 shadow-lg border-2 border-purple-700 w-full animate-[fadeIn_0.3s_ease-out]" id="structure-ifelse-container">
+        <div class="flex flex-col md:flex-row items-start md:items-center gap-3 mb-4">
+            <span class="font-bold text-white text-xl w-10">IF</span>
+            <div class="drop-zone flex-1 bg-white/95 border-2 border-dashed border-purple-300 rounded-lg flex items-center justify-center text-gray-500 text-sm p-2 min-h-[50px] w-full" id="drop-condition" data-expected="${condExpected}">${condText}</div>
+        </div>
+        <div class="pl-4 md:pl-8 border-l-4 border-purple-300 mb-4">
+            <span class="font-bold text-white text-sm mb-2 block">DO (เมื่อเป็นจริง)</span>
+            <div class="flex flex-col w-full">
+                ${doSlots}
+            </div>
+        </div>
+        <div class="flex items-center gap-2 mb-3 mt-4">
+            <span class="font-bold text-white text-xl">ELSE</span>
+        </div>
+        <div class="pl-4 md:pl-8 border-l-4 border-purple-300">
+            <span class="font-bold text-white text-sm mb-2 block">DO (เมื่อเป็นเท็จ)</span>
+            <div class="flex flex-col w-full">
+                ${elseSlots}
+            </div>
+        </div>
+    </div>
+    `;
+}
+
+function getAndTemplate() {
+    return `
+    <div class="flex-1 bg-[#a855f7] rounded-lg p-2 flex flex-col md:flex-row items-stretch md:items-center gap-3 shadow-inner border-2 border-purple-400 w-full animate-[fadeIn_0.3s_ease-out]" id="logic-and-container" data-type="logic-and">
+        <div class="drop-zone flex-1 bg-white/95 border-2 border-dashed border-purple-300 rounded flex items-center justify-center text-gray-500 text-sm font-medium p-2 min-h-[46px]" id="drop-cond1" data-expected="sensor">วางเซนเซอร์ 1</div>
+        <div class="flex justify-center shrink-0">
+            <select class="logic-sel text-purple-900 bg-white px-3 py-1.5 rounded-lg font-bold shadow-sm outline-none cursor-pointer text-sm hover:bg-gray-50 border border-purple-300"><option value="AND">AND</option><option value="OR">OR</option></select>
+        </div>
+        <div class="drop-zone flex-1 bg-white/95 border-2 border-dashed border-purple-300 rounded flex items-center justify-center text-gray-500 text-sm font-medium p-2 min-h-[46px]" id="drop-cond2" data-expected="sensor">วางเซนเซอร์ 2</div>
+    </div>
+    `;
+}
+
+function buildWorkspaceHTML(type) {
+    if (type === 'sequence') {
+        return `
+            <p class="text-sm text-gray-500 mb-3 font-medium text-center">ระบบจะประมวลผลคำสั่งจากบนลงล่างตามลำดับ (Sequential)</p>
+            <div class="flex items-center gap-2 mb-3">
+                <span class="font-bold text-blue-700 w-16">STEP 1</span>
+                <div class="drop-zone flex-1 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 text-sm p-2" id="drop-step1" data-expected="action-led" data-text="วางคำสั่งที่ 1">วางคำสั่งที่ 1</div>
+            </div>
+            <div class="flex items-center gap-2 mb-3">
+                <span class="font-bold text-amber-600 w-16">WAIT</span>
+                <div class="drop-zone flex-1 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 text-sm p-2" id="drop-step2" data-expected="delay" data-text="วางคำสั่งหน่วงเวลา">วางคำสั่งหน่วงเวลา</div>
+            </div>
+            <div class="flex items-center gap-2 mb-3">
+                <span class="font-bold text-blue-700 w-16">STEP 2</span>
+                <div class="drop-zone flex-1 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 text-sm p-2" id="drop-step3" data-expected="action-led" data-text="วางคำสั่งที่ 2">วางคำสั่งที่ 2</div>
+            </div>
+        `;
+    } else {
+        return `
+            <div class="drop-zone w-full border-4 border-dashed border-purple-300 bg-purple-50/50 rounded-xl flex flex-col items-center justify-center text-purple-500 p-8 min-h-[250px] transition-colors hover:bg-purple-100/50" id="workspace-main-drop" data-expected="structure-ifelse">
+                <svg class="w-16 h-16 mb-4 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                <span class="font-bold text-lg text-center">วางโครงสร้าง IF-DO-ELSE ที่นี่</span>
+            </div>
+            <button onclick="preparePuzzle(currentLevel)" class="mt-4 text-sm text-gray-500 hover:text-gray-800 underline text-center w-full">เริ่มใหม่ (Reset Workspace)</button>
+        `;
+    }
+}
+
+function preparePuzzle(level) {
+    const data = levelsData[level];
+    document.getElementById('puzzle-title').innerText = data.title;
+    document.getElementById('puzzle-desc').innerHTML = data.desc.replace(/\n/g, '<br>');
+    
+    // Inject dynamic workspace
+    document.getElementById('workspace-container').innerHTML = buildWorkspaceHTML(data.workspaceType);
+    
+    // Generate Draggable Blocks
+    const container = document.getElementById('block-container');
+    container.innerHTML = '';
+    
+    const blocksHTML = data.blocks.map(b => {
+        const el = document.createElement('div');
+        el.className = `block-item ${b.class} p-3 rounded-lg shadow-md font-medium text-center`;
+        el.draggable = true;
+        el.setAttribute('data-type', b.type);
+        
+        if (b.isInput) {
+            el.innerHTML = `${b.text} <input type="text" class="block-input text-gray-900 px-2 py-1 rounded mt-2 w-full text-sm font-bold text-center border-2 border-transparent focus:border-green-400 focus:outline-none placeholder-gray-400" placeholder="${b.placeholder}" onmousedown="event.stopPropagation()" onfocus="this.parentElement.draggable=false" onblur="this.parentElement.draggable=true">`;
+        } else if (b.isComplex) {
+            el.innerHTML = b.html;
+            el.querySelectorAll('select, input').forEach(child => {
+                child.onmousedown = (e) => e.stopPropagation();
+                child.onfocus = () => el.draggable = false;
+                child.onblur = () => el.draggable = true;
+            });
+        } else {
+            el.innerText = b.text;
+        }
+        
+        el.addEventListener('dragstart', function(e) { draggedBlock = this; setTimeout(() => this.classList.add('opacity-50'), 0); });
+        el.addEventListener('dragend', function() { setTimeout(() => this.classList.remove('opacity-50'), 0); draggedBlock = null; });
+        return el;
+    });
+    blocksHTML.sort(() => Math.random() - 0.5).forEach(el => container.appendChild(el));
+
+    bindDropZones(); // Re-bind events
+}
+
+// --- DRAG & DROP LOGIC ---
+function bindDropZones() {
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+        // Using property assignments to prevent multiple event listeners without cloneNode issue
+        zone.ondragover = function(e) { e.preventDefault(); this.classList.add('drag-over'); };
+        zone.ondragleave = function(e) { this.classList.remove('drag-over'); };
+        zone.ondrop = function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            if (draggedBlock) {
+                const expectedType = this.getAttribute('data-expected');
+                const blockType = draggedBlock.getAttribute('data-type');
+                
+                // Strict rules for structural drops
+                if (expectedType === 'structure-ifelse') {
+                    if (blockType !== 'structure-ifelse') {
+                        showToast("ต้องวางบล็อกโครงสร้าง IF-DO-ELSE (สีม่วง) ก่อนครับ!");
+                        return;
+                    }
+                    this.outerHTML = getIfElseTemplate(currentLevel);
+                    draggedBlock.remove(); // Consume the block
+                    bindDropZones();
+                    return;
+                }
+                
+                if (expectedType === 'logic-and' && currentLevel === 3) {
+                    if (blockType !== 'logic-and') {
+                        showToast("ช่องนี้ต้องใช้บล็อกตรรกะ [AND/OR] ครับ!");
+                        return;
+                    }
+                    this.outerHTML = getAndTemplate();
+                    draggedBlock.remove();
+                    bindDropZones();
+                    return;
+                }
+
+                // Strict dropping for level 1
+                if (currentLevel === 1 && expectedType && !blockType.includes(expectedType) && expectedType !== blockType) {
+                    showToast("ประเภทบล็อกไม่ตรงกับช่องนี้!");
+                    return;
+                }
+
+                const existingBlock = this.querySelector('.block-item');
+                if (existingBlock) document.getElementById('block-container').appendChild(existingBlock);
+                this.innerHTML = '';
+                this.classList.add('bg-white', 'border-transparent');
+                
+                // Ensure dropped block fits perfectly
+                draggedBlock.style.width = '100%';
+                draggedBlock.style.margin = '0';
+                this.appendChild(draggedBlock);
+            }
+        };
+    });
+
+    // Container drop zone (returning blocks to inventory)
+    const blockContainer = document.getElementById('block-container');
+    blockContainer.ondragover = function(e) { e.preventDefault(); };
+    blockContainer.ondrop = function(e) {
+        e.preventDefault();
+        if (draggedBlock) {
+            draggedBlock.style.width = 'fit-content';
+            draggedBlock.style.margin = '0 auto';
+            this.appendChild(draggedBlock);
+            
+            // Reset placeholder text in empty zones
+            document.querySelectorAll('.drop-zone').forEach(z => {
+                if (z.children.length === 0 && z.getAttribute('data-text')) {
+                    z.innerHTML = z.getAttribute('data-text');
+                    z.classList.remove('bg-white', 'border-transparent');
+                }
+            });
+        }
+    };
+}
+
+// --- EVALUATION HELPERS FOR LEVEL 2 & 3 ---
+function evalSensor(blockEl, currentTemp, currentLight) {
+    if (!blockEl || !blockEl.classList.contains('block-item')) return { valid: false, error: 'missing' };
+    if (blockEl.getAttribute('data-type') !== 'sensor') return { valid: false, error: 'type' };
+
+    let sType = blockEl.querySelector('.sensor-type').innerText.trim().toLowerCase();
+    let op = blockEl.querySelector('.op-sel').value;
+    let valStr = blockEl.querySelector('.val-input').value.trim();
+    let val = parseFloat(valStr);
+    if (isNaN(val)) val = 0;
+
+    let currentVal = (sType === 'temp') ? currentTemp : currentLight;
+    let result = false;
+    if (op === '>') result = currentVal > val;
+    else if (op === '<') result = currentVal < val;
+    else if (op === '=') result = currentVal == val;
+
+    return {
+        valid: true,
+        type: sType,
+        op: op,
+        inputVal: valStr,
+        val: val,
+        result: result,
+        text: `${sType==="temp"?"Temp":"Light"} ${op} ${valStr===""?"?":val}`
+    };
+}
+
+function evalAction(blockEl) {
+    if (!blockEl || !blockEl.classList.contains('block-item')) return { valid: false };
+    if (blockEl.getAttribute('data-type') !== 'action') return { valid: false };
+    
+    let aType = blockEl.querySelector('.action-type').innerText.trim().toLowerCase();
+    let stat = blockEl.querySelector('.stat-sel').value;
+    return { valid: true, type: aType, stat: stat, text: `${aType==="fan"?"Fan":"LED"} = ${stat}` };
+}
+
+// --- SIMULATION LOGIC ---
+function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+async function runSimulation() {
+    const data = levelsData[currentLevel];
+    let isPerfect = false;
+
+    // Structure Check
+    if (currentLevel > 1) {
+        if (!document.getElementById('structure-ifelse-container')) {
+            showToast("คุณยังไม่ได้วางโครงสร้างบล็อกหลักเลยครับ!");
+            return;
+        }
+        if (currentLevel === 3 && !document.getElementById('logic-and-container')) {
+            showToast("อย่าลืมวางบล็อกตรรกะ [AND/OR] สีม่วงในช่อง IF นะครับ!");
+            return;
+        }
+    }
+
+    // Count logic
+    let expectedCount = currentLevel === 1 ? 3 : (currentLevel === 2 ? 3 : 6);
+    let blocksPlaced = 0;
+    document.querySelectorAll('.drop-zone').forEach(z => { if (z.querySelector('.block-item')) blocksPlaced++; });
+
+    if (blocksPlaced < expectedCount) {
+        showToast(`กรุณาวางบล็อกให้ครบทุกช่อง (${blocksPlaced}/${expectedCount})`);
+        return;
+    }
+
+    // Prep Modal
+    const modal = document.getElementById('simModal');
+    const logContainer = document.getElementById('sim-log-container');
+    const iconEl = document.getElementById('sim-visual-icon');
+    const textEl = document.getElementById('sim-visual-text');
+    
+    document.getElementById('sim-action-buttons').classList.add('hidden');
+    document.getElementById('sim-close-x').classList.add('hidden');
+    logContainer.innerHTML = '';
+    
+    const visContainer = document.getElementById('sim-visual-container');
+    if (currentLevel === 1) {
+        visContainer.className = "h-24 w-48 flex items-center justify-center rounded-lg bg-slate-900 mb-4 overflow-hidden border-4 border-slate-700 shadow-inner relative mx-auto";
+    } else {
+        visContainer.className = "h-32 w-32 flex items-center justify-center rounded-2xl bg-slate-800 mb-4 overflow-hidden border-4 border-slate-300 shadow-inner relative mx-auto";
+    }
+
+    iconEl.className = 'text-6xl transition-all duration-700 transform scale-100 flex items-center justify-center w-full h-full text-center';
+    iconEl.innerHTML = '⏳';
+    textEl.innerText = 'กำลังส่งคำสั่ง...';
+    textEl.className = 'text-lg font-bold text-gray-500 h-8';
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    if (data.workspaceType === 'sequence') {
+        // LEVEL 1: Sequential Simulation
+        document.getElementById('sim-trigger').innerText = "รันโปรแกรมตามลำดับขั้น (Sequence)";
+        const steps = [
+            document.querySelector('#drop-step1 .block-item'),
+            document.querySelector('#drop-step2 .block-item'),
+            document.querySelector('#drop-step3 .block-item')
+        ];
+        
+        let structError = false, textError1 = false, textError2 = false;
+        
+        for (let i = 0; i < 3; i++) {
+            const stepEl = steps[i];
+            const sType = stepEl.getAttribute('data-type');
+            
+            let blockText = stepEl.innerText;
+            let val = "";
+            if (stepEl.querySelector('input')) {
+                val = stepEl.querySelector('input').value.trim();
+                blockText = `LED 16x8 = "${val}"`;
+            }
+            
+            logContainer.innerHTML += `<p class="mb-2 text-blue-600 font-bold">▶ รันคำสั่งที่ ${i+1}: <span class="text-gray-700 font-normal">${blockText}</span></p>`;
+            
+            if (sType === 'action-led') {
+                iconEl.innerHTML = `<div class="led-screen"><span class="led-text">${val || " "}</span></div>`;
+                textEl.innerText = `แสดงผล: ${val || "(ว่าง)"}`;
+                await sleep(2500); 
+            } else if (sType === 'delay') {
+                iconEl.innerHTML = '⏳';
+                textEl.innerText = 'กำลังหน่วงเวลา 2 วินาที...';
+                await sleep(2000);
+            } else {
+                iconEl.innerHTML = '❓';
+                textEl.innerText = 'คำสั่งไม่รู้จัก (Error)';
+                await sleep(1500);
+            }
+        }
+
+        if (steps[0].getAttribute('data-type') !== 'action-led' || 
+            steps[1].getAttribute('data-type') !== 'delay' || 
+            steps[2].getAttribute('data-type') !== 'action-led') {
+            structError = true;
+        }
+
+        let val1 = steps[0].querySelector('input') ? steps[0].querySelector('input').value.trim() : "";
+        let val3 = steps[2].querySelector('input') ? steps[2].querySelector('input').value.trim() : "";
+
+        if (!structError) {
+            if (val1 !== "LIGHT ON") textError1 = true;
+            if (!/^[A-Za-z\s]+$/.test(val3) || val3.length < 1 || val3 === "LIGHT ON") textError2 = true;
+        }
+
+        isPerfect = !structError && !textError1 && !textError2;
+
+        await sleep(500);
+        logContainer.innerHTML += `<hr class="my-3 border-gray-300"><p class="mb-1 text-gray-600 font-bold text-xs">▶ ผลการตรวจสอบความถูกต้อง...</p>`;
+        if (isPerfect) {
+            logContainer.innerHTML += `<p class="text-green-600 font-bold text-sm">✅ โค้ดสมบูรณ์ ลำดับและข้อความถูกต้อง!</p>`;
+        } else {
+            if (structError) logContainer.innerHTML += `<p class="text-red-600 font-bold text-sm">❌ โครงสร้างผิด (ต้องเรียง: LED -> Delay -> LED)</p>`;
+            else {
+                if (textError1) logContainer.innerHTML += `<p class="text-red-600 font-bold text-sm mb-1">❌ ข้อความแรกต้องเป็นคำว่า "LIGHT ON" แบบเป๊ะๆ</p>`;
+                if (textError2) logContainer.innerHTML += `<p class="text-red-600 font-bold text-sm">❌ ชื่อต้องเป็นภาษาอังกฤษเท่านั้น ห้ามเว้นว่าง และห้ามซ้ำกับ LIGHT ON</p>`;
+            }
+        }
+
+    } else if (data.workspaceType === 'dynamic-ifelse' && currentLevel === 2) {
+        // LEVEL 2: Dynamic If-Else Dynamic evaluation
+        const condEl = document.querySelector('#drop-condition .block-item');
+        const trueEl = document.querySelector('#drop-true1 .block-item');
+        const falseEl = document.querySelector('#drop-false1 .block-item');
+
+        document.getElementById('sim-trigger').innerText = "เซนเซอร์วัดค่าได้: Temp = 38°C (ร้อนจัด!)";
+        await sleep(800);
+
+        let c1 = evalSensor(condEl, 38, 0); // temp=38
+        if (!c1.valid) {
+            logContainer.innerHTML += `<p class="mb-2"><span class="text-indigo-500 font-bold">▶ ผลลัพธ์:</span> <span class="font-bold text-red-600">Error: ใส่บล็อกเซนเซอร์ผิดประเภท</span></p>`;
+            iconEl.innerHTML = '💥'; iconEl.className += ' text-red-500 animate-bounce scale-125';
+            textEl.innerText = 'โปรแกรมพัง (Syntax Error)!'; textEl.className = 'text-lg font-bold h-8 text-red-500';
+        } else {
+            logContainer.innerHTML += `<p class="mb-2"><span class="text-blue-500 font-bold">▶ ตรวจสอบ IF:</span> <span class="text-gray-700 font-normal">${c1.text}</span> (ปัจจุบัน 38)</p>`;
+            await sleep(1000);
+
+            logContainer.innerHTML += `<p class="mb-2"><span class="text-indigo-500 font-bold">▶ ผลลัพธ์เงื่อนไข:</span> <span class="font-bold ${c1.result ? 'text-green-600' : 'text-red-600'}">เป็น${c1.result ? 'จริง (TRUE)' : 'เท็จ (FALSE)'}</span></p>`;
+            await sleep(1200);
+
+            let executedEl = c1.result ? trueEl : falseEl;
+            let executedZone = c1.result ? "DO (True)" : "ELSE DO (False)";
+            let a = evalAction(executedEl);
+
+            if (!a.valid) {
+                logContainer.innerHTML += `<p><span class="text-green-500 font-bold">▶ รันคำสั่ง ${executedZone}:</span> <span class="font-bold text-red-600">Error: ไม่ใช่คำสั่งอุปกรณ์</span></p>`;
+                iconEl.innerHTML = '❓'; iconEl.className += ' text-orange-500 scale-125';
+                textEl.innerText = 'คำสั่งผิดพลาด (Error)!'; textEl.className = 'text-lg font-bold h-8 text-orange-500';
+                isPerfect = false;
+            } else {
+                logContainer.innerHTML += `<p><span class="text-green-500 font-bold">▶ รันคำสั่ง ${executedZone}:</span> <span class="bg-white px-1 border rounded text-gray-700 font-bold">${a.text}</span></p>`;
+                await sleep(800);
+
+                if (a.type === 'fan' && a.stat === 'ON') {
+                    iconEl.innerHTML = '🌀'; iconEl.className += ' spin-fast text-blue-400 scale-125';
+                    textEl.innerText = 'พัดลมทำงาน! ระบายความร้อนได้ดี 🌿'; textEl.className = 'text-lg font-bold h-8 text-green-600';
+                } else if (a.type === 'fan' && a.stat === 'OFF') {
+                    iconEl.innerHTML = '🛑'; iconEl.className += ' dark-fade scale-125';
+                    textEl.innerText = 'พัดลมปิด! ต้นไม้เหี่ยวเฉา 🥀'; textEl.className = 'text-lg font-bold h-8 text-red-500';
+                } else {
+                    iconEl.innerHTML = '❓'; iconEl.className += ' text-orange-500 scale-125';
+                    textEl.innerText = 'สั่งอุปกรณ์ผิดประเภท!'; textEl.className = 'text-lg font-bold h-8 text-orange-500';
+                }
+            }
+        }
+
+        // Level 2 Strict Check: Temp > 30, True=Fan ON, False=Fan OFF
+        let t1 = evalAction(trueEl);
+        let f1 = evalAction(falseEl);
+        isPerfect = c1.valid && c1.type === 'temp' && c1.op === '>' && c1.inputVal === '30' &&
+                    t1.valid && t1.type === 'fan' && t1.stat === 'ON' &&
+                    f1.valid && f1.type === 'fan' && f1.stat === 'OFF';
+
+        await sleep(1500);
+        logContainer.innerHTML += `<hr class="my-3 border-gray-300"><p class="mb-1 text-gray-600 font-bold text-xs">▶ ตรวจสอบความสมบูรณ์...</p>`;
+        logContainer.scrollTop = logContainer.scrollHeight;
+        await sleep(500);
+        if (isPerfect) logContainer.innerHTML += `<p class="text-green-600 font-bold text-sm">✅ โค้ดและตัวเลขเงื่อนไขเป๊ะ 100%</p>`;
+        else logContainer.innerHTML += `<p class="text-red-600 font-bold text-sm">❌ มีข้อผิดพลาด (ตรวจสอบตัวเลข และสถานะพัดลมให้ตรงโจทย์)</p>`;
+
+    } else if (data.workspaceType === 'dynamic-ifelse' && currentLevel === 3) {
+        // LEVEL 3: Complex Logic Simulation
+        const cond1El = document.querySelector('#drop-cond1 .block-item');
+        const cond2El = document.querySelector('#drop-cond2 .block-item');
+        const logicOp = document.querySelector('.logic-sel').value; 
+        
+        const true1El = document.querySelector('#drop-true1 .block-item');
+        const true2El = document.querySelector('#drop-true2 .block-item');
+        const false1El = document.querySelector('#drop-false1 .block-item');
+        const false2El = document.querySelector('#drop-false2 .block-item');
+
+        const currentTemp = 35;
+        const currentLight = 10;
+        document.getElementById('sim-trigger').innerText = `สถานะปัจจุบัน: Temp = ${currentTemp}°C และ Light = ${currentLight} Lux`;
+        await sleep(800);
+
+        let c1 = evalSensor(cond1El, currentTemp, currentLight);
+        let c2 = evalSensor(cond2El, currentTemp, currentLight);
+
+        if (!c1.valid || !c2.valid) {
+            logContainer.innerHTML += `<p class="mb-2"><span class="font-bold text-red-600">Error: ลากบล็อกในช่องเซนเซอร์ผิดประเภท หรือไม่ครบ</span></p>`;
+            iconEl.innerHTML = '💥'; iconEl.className += ' text-red-500 animate-bounce scale-125';
+            textEl.innerText = 'โปรแกรมพัง (Syntax Error)!'; textEl.className = 'text-lg font-bold h-8 text-red-500';
+        } else {
+            logContainer.innerHTML += `<p class="mb-1 text-blue-500 text-xs">▶ เงื่อนไขที่ 1: <span class="text-gray-700">${c1.text} -> <b>${c1.result}</b></span></p>`;
+            await sleep(800);
+            logContainer.innerHTML += `<p class="mb-1 text-blue-500 text-xs">▶ เงื่อนไขที่ 2: <span class="text-gray-700">${c2.text} -> <b>${c2.result}</b></span></p>`;
+            await sleep(800);
+
+            let finalCond = false;
+            if (logicOp === 'AND') finalCond = c1.result && c2.result;
+            else finalCond = c1.result || c2.result;
+
+            logContainer.innerHTML += `<p class="mb-2"><span class="text-indigo-500 font-bold">▶ ตรรกะรวม (${logicOp}):</span> <span class="font-bold ${finalCond ? 'text-green-600' : 'text-red-600'}">เป็น${finalCond ? 'จริง (TRUE)' : 'เท็จ (FALSE)'}</span></p>`;
+            await sleep(1000);
+
+            let e1 = finalCond ? true1El : false1El;
+            let e2 = finalCond ? true2El : false2El;
+            let executedZone = finalCond ? "DO (True)" : "ELSE (False)";
+
+            let a1 = evalAction(e1);
+            let a2 = evalAction(e2);
+
+            if (!a1.valid || !a2.valid) {
+                logContainer.innerHTML += `<p><span class="font-bold text-red-600">Error: วางบล็อกสั่งการผิดประเภท</span></p>`;
+                iconEl.innerHTML = '❓'; iconEl.className += ' text-orange-500 scale-125';
+                textEl.innerText = 'คำสั่งผิดพลาด (Error)!'; textEl.className = 'text-lg font-bold h-8 text-orange-500';
+            } else {
+                logContainer.innerHTML += `<p><span class="text-green-500 font-bold">▶ รันคำสั่ง ${executedZone}:</span><br><span class="text-gray-700 text-xs">- ${a1.text}<br>- ${a2.text}</span></p>`;
+                await sleep(1000);
+
+                let showFan = false, showLed = false;
+                let fanOn = false, ledOn = false;
+
+                [a1, a2].forEach(a => {
+                    if(a.type === 'fan') { showFan = true; fanOn = (a.stat === 'ON'); }
+                    if(a.type === 'led') { showLed = true; ledOn = (a.stat === 'ON'); }
+                });
+
+                let iconHtml = '<div class="flex gap-2">';
+                if(showFan) iconHtml += `<span class="${fanOn ? 'spin-fast text-blue-400' : 'dark-fade'} inline-block">🌀</span>`;
+                if(showLed) iconHtml += `<span class="${ledOn ? 'glow-yellow' : 'dark-fade'} inline-block">💡</span>`;
+                iconHtml += '</div>';
+                iconEl.innerHTML = iconHtml;
+
+                if (showFan && showLed) {
+                    textEl.innerText = (fanOn && ledOn) ? "ระบบทำงานสมบูรณ์ 🌿" : "พัดลมและไฟปิด ต้นไม้ตาย 🥀";
+                    textEl.className = (fanOn && ledOn) ? "text-lg font-bold h-8 text-green-600" : "text-lg font-bold h-8 text-red-500";
+                } else {
+                    textEl.innerText = "สั่งอุปกรณ์ซ้ำหรือผิดประเภท ❓";
+                    textEl.className = "text-lg font-bold h-8 text-orange-500";
+                }
+            }
+        }
+        logContainer.scrollTop = logContainer.scrollHeight;
+
+        // Level 3 Strict Check
+        let isCondPerfect = false;
+        if (c1.valid && c2.valid) {
+            let condA = (c1.type === 'temp' && c1.op === '>' && c1.inputVal === '30' && c2.type === 'light' && c2.op === '<' && c2.inputVal === '30');
+            let condB = (c1.type === 'light' && c1.op === '<' && c1.inputVal === '30' && c2.type === 'temp' && c2.op === '>' && c2.inputVal === '30');
+            isCondPerfect = (condA || condB) && logicOp === 'AND';
+        }
+
+        let t1 = evalAction(true1El), t2 = evalAction(true2El);
+        let f1 = evalAction(false1El), f2 = evalAction(false2El);
+
+        let isTruePerfect = false;
+        if (t1.valid && t2.valid) {
+            isTruePerfect = (t1.type === 'fan' && t1.stat === 'ON' && t2.type === 'led' && t2.stat === 'ON') ||
+                            (t1.type === 'led' && t1.stat === 'ON' && t2.type === 'fan' && t2.stat === 'ON');
+        }
+
+        let isFalsePerfect = false;
+        if (f1.valid && f2.valid) {
+            isFalsePerfect = (f1.type === 'fan' && f1.stat === 'OFF' && f2.type === 'led' && f2.stat === 'OFF') ||
+                                (f1.type === 'led' && f1.stat === 'OFF' && f2.type === 'fan' && f2.stat === 'OFF');
+        }
+
+        isPerfect = isCondPerfect && isTruePerfect && isFalsePerfect;
+
+        await sleep(1500);
+        logContainer.innerHTML += `<hr class="my-3 border-gray-300"><p class="mb-1 text-gray-600 font-bold text-xs">▶ ตรวจสอบความสมบูรณ์...</p>`;
+        logContainer.scrollTop = logContainer.scrollHeight;
+        await sleep(500);
+        if (isPerfect) logContainer.innerHTML += `<p class="text-green-600 font-bold text-sm">✅ โค้ดและตรรกะเงื่อนไขสมบูรณ์ 100%</p>`;
+        else logContainer.innerHTML += `<p class="text-red-600 font-bold text-sm">❌ มีข้อผิดพลาด (ตรวจสอบเงื่อนไข ตัวเลขตรรกะ และสถานะ On/Off ทั้งหมดให้เป๊ะๆ)</p>`;
+        logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    window.currentSimResult = isPerfect;
+    await sleep(2000); 
+    
+    document.getElementById('sim-action-buttons').classList.remove('hidden');
+    document.getElementById('sim-close-x').classList.remove('hidden');
+    
+    if (isPerfect) {
+        document.getElementById('sim-btn-next').classList.remove('hidden');
+        document.getElementById('sim-btn-retry').classList.add('hidden');
+    } else {
+        document.getElementById('sim-btn-retry').classList.remove('hidden');
+        document.getElementById('sim-btn-next').classList.add('hidden');
+    }
+}
+
+function closeSimulation(isSuccess) {
+    const modal = document.getElementById('simModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    if (isSuccess) { handleSuccess(); }
+    else { showToast("ยังไม่สมบูรณ์ ลองตรวจสอบและปรับตัวเลข/ข้อความอีกครั้งนะ!"); }
+}
+
+// --- SUCCESS & TOAST ---
+function handleSuccess() {
+    const modal = document.getElementById('successModal');
+    const content = document.getElementById('modalContent');
+    const btn = document.getElementById('next-level-btn');
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setTimeout(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+
+    if (currentLevel === unlockedLevel && unlockedLevel < 3) unlockedLevel++;
+
+    if (currentLevel < 3) {
+        document.getElementById('modal-desc').innerText = `ภารกิจที่ ${currentLevel} เสร็จสมบูรณ์! ตอนนี้คุณพร้อมสำหรับความท้าทายขั้นต่อไปแล้ว`;
+        btn.innerText = "ไปรับภารกิจถัดไป";
+        btn.onclick = () => { closeModal(); startStory(currentLevel + 1); };
+    } else {
+        document.getElementById('modal-desc').innerText = "ยินดีด้วย! คุณพิชิตภารกิจ Smart Farm ครบทุกด่านแล้ว 🏆 คุณสามารถนำตรรกะนี้ไปเขียนโค้ดจริงใน KidBright ได้เลย";
+        btn.innerText = "กลับหน้าเมนูหลัก";
+        btn.onclick = () => { closeModal(); showView('view-home'); };
+    }
+}
+
+function closeModal() {
+    const modal = document.getElementById('successModal');
+    const content = document.getElementById('modalContent');
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => { modal.classList.remove('flex'); modal.classList.add('hidden'); }, 300);
+}
+
+function showToast(message) {
+    const toast = document.getElementById('errorToast');
+    document.getElementById('toast-msg').innerText = message;
+    toast.classList.remove('opacity-0');
+    toast.classList.add('opacity-100');
+    setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0');
+    }, 3500);
+}
+
+// Init
+renderLevelSelect();
