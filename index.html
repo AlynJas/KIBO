@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KIBO | Block Coding</title>
-    <link rel="icon" type="image" href="asset/Logo.png"/>
+    <title>Smart Office Logic Puzzle</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/drag-drop-touch"></script>
+    
     <link href="css/styles.css" rel="stylesheet"/>
+    <script src="https://unpkg.com/drag-drop-touch"></script>
+
     <style>
         body {
             font-family: 'Prompt', sans-serif; background-color: #f0fdf4;
@@ -37,6 +38,7 @@
             margin: 0 auto;
             touch-action: none; 
         }
+        
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8 flex flex-col items-center">
@@ -80,7 +82,7 @@
     </div>
 
     <!-- 4. PUZZLE VIEW -->
-    <div id="view-puzzle" style="background: rgba(109, 130, 193, 0.4); backdrop-filter: blur(8px);" class="view-section flex-col max-w-6xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div id="view-puzzle" style="background: rgba(109, 130, 193, 0.4); backdrop-filter: blur(8px);" class="view-section flex-col max-w-7xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
         <div class="bg-blue-600 text-white p-4 flex justify-between items-center" style="background: rgba(81, 111, 200, 0.427); backdrop-filter: blur(8px);">
             <button onclick="showView('view-levels')" class="text-blue-100 hover:text-white flex items-center gap-1 text-sm font-medium">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg> เมนูด่าน
@@ -121,27 +123,45 @@
 
     <!-- Simulation Modal -->
     <div id="simModal" class="fixed inset-0 bg-black bg-opacity-80 z-50 hidden flex-col justify-center items-center">
-        <div class="bg-white rounded-2xl p-6 md:p-8 max-w-md w-full mx-4 text-center shadow-2xl flex flex-col items-center relative">
-             <button id="sim-close-x" onclick="closeSimulation(window.currentSimResult)" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 hidden transition-colors">
+        <div class="bg-white rounded-2xl p-6 md:p-8 max-w-lg w-full mx-4 text-center shadow-2xl flex flex-col items-center relative overflow-y-auto max-h-[95vh] custom-scroll">
+             <button id="sim-close-x" onclick="closeSimulation(window.currentSimResult)" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 hidden transition-colors z-10">
                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
              </button>
-             <h3 class="text-2xl font-bold text-gray-800 mb-4 border-b-2 border-gray-200 pb-2 w-full">การจำลองการทำงาน</h3>
+             <h3 class="text-2xl font-bold text-gray-800 mb-4 border-b-2 border-gray-200 pb-2 w-full">การจำลองการทำงาน & ตรวจสอบผล</h3>
              
-             <div class="bg-indigo-50 text-indigo-800 p-3 rounded-lg w-full mb-4 font-semibold text-sm border border-indigo-200 shadow-inner" id="sim-trigger">
-                 สถานะเริ่มต้น...
+             <!-- แอนิเมชัน และ Log จำลอง -->
+             <div id="sim-animation-section" class="w-full">
+                 <div class="bg-indigo-50 text-indigo-800 p-3 rounded-lg w-full mb-4 font-semibold text-sm border border-indigo-200 shadow-inner" id="sim-trigger">
+                     สถานะเริ่มต้น...
+                 </div>
+
+                 <!-- Visual Output Window -->
+                 <div id="sim-visual-container" class="h-32 w-32 flex items-center justify-center rounded-2xl bg-slate-800 mb-4 overflow-hidden border-4 border-slate-300 shadow-inner relative mx-auto">
+                      <div id="sim-visual-icon" class="text-6xl transition-all duration-700 transform scale-100 flex items-center justify-center w-full h-full text-center">⏳</div>
+                 </div>
+                 <p id="sim-visual-text" class="text-lg font-bold text-gray-500 h-8 mb-4">กำลังประมวลผลคำสั่ง...</p>
+
+                 <div class="text-left w-full mb-4 bg-gray-50 p-4 rounded-lg text-sm font-mono text-gray-700 border border-gray-200 shadow-inner max-h-48 overflow-y-auto custom-scroll" id="sim-log-container">
+                     <!-- Logs injected dynamically -->
+                 </div>
              </div>
 
-             <div class="text-left w-full mb-6 bg-gray-50 p-4 rounded-lg text-sm font-mono text-gray-700 border border-gray-200 shadow-inner min-h-[100px] max-h-60 overflow-y-auto" id="sim-log-container">
-                 <!-- Logs injected dynamically -->
+             <!-- Checklist Feedback Section (New) -->
+             <div id="sim-feedback-section" class="w-full hidden text-left bg-blue-50/50 p-5 rounded-xl border-2 border-blue-100 mt-2">
+                 <h4 class="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                     <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                     สรุปผลการประเมิน (Feedback Checklist)
+                 </h4>
+                 <div id="sim-checklist-items" class="space-y-2 text-sm">
+                     <!-- Checklist items injected dynamically -->
+                 </div>
+                 <div id="sim-score-display" class="mt-4 text-center font-bold py-3 rounded-lg border-2">
+                     <!-- Score injected dynamically -->
+                 </div>
              </div>
 
-             <!-- Visual Output Window -->
-             <div id="sim-visual-container" class="h-32 w-32 flex items-center justify-center rounded-2xl bg-slate-800 mb-4 overflow-hidden border-4 border-slate-300 shadow-inner relative mx-auto">
-                  <div id="sim-visual-icon" class="text-6xl transition-all duration-700 transform scale-100 flex items-center justify-center w-full h-full text-center">⏳</div>
-             </div>
-             <p id="sim-visual-text" class="text-lg font-bold text-gray-500 h-8">กำลังประมวลผลคำสั่ง...</p>
-
-             <div id="sim-action-buttons" class="mt-4 w-full flex gap-3 hidden">
+             <!-- Action Buttons -->
+             <div id="sim-action-buttons" class="mt-6 w-full flex gap-3 hidden">
                  <button id="sim-btn-retry" onclick="closeSimulation(false)" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg transition-colors hidden">ปิด (แก้ไขโค้ดใหม่)</button>
                  <button id="sim-btn-next" onclick="closeSimulation(true)" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors hidden shadow-md">ดำเนินการต่อ</button>
              </div>
@@ -154,8 +174,8 @@
             <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-6">
                 <svg class="h-10 w-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
             </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-2">ยอดเยี่ยมมาก!</h3>
-            <p id="modal-desc" class="text-gray-600 mb-6">ตรรกะถูกต้อง คุณผ่านด่านนี้แล้ว!</p>
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">ผ่านภารกิจ!</h3>
+            <p id="modal-desc" class="text-gray-600 mb-6">คุณได้คะแนนเต็มในด่านนี้!</p>
             <button id="next-level-btn" onclick="goToNextLevel()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow transition-colors mb-2">ไปด่านถัดไป</button>
             <button onclick="window.open('https://simulator.kidbright.space/', '_blank')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded-lg shadow-sm transition-colors text-sm">นำไปเขียนใน KidBright IDE</button>
         </div>
