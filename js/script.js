@@ -256,22 +256,40 @@ function preparePuzzle(level) {
         el.draggable = true;
         el.setAttribute('data-type', b.type);
         
-        if (b.isComplex) {
+        if (b.isInput) {
+            el.innerHTML = `<div class="flex items-center justify-center w-full">${b.text} <span class="mx-2 font-bold text-green-100"></span> <input type="text" class="block-input text-gray-900 bg-white px-2 py-1 rounded w-24 text-sm font-bold text-center shadow-sm outline-none placeholder-gray-400" placeholder="${b.placeholder}"></div>`;
+        } else if (b.isComplex) {
             el.innerHTML = b.html;
-            el.querySelectorAll('select, input').forEach(child => {
-                child.onmousedown = (e) => e.stopPropagation();
-                child.ontouchstart = (e) => e.stopPropagation();
-                child.onfocus = () => el.draggable = false;
-                child.onblur = () => el.draggable = true;
-            });
         } else {
             el.innerText = b.text;
         }
-        return el;
-    });
-    blocksHTML.sort(() => Math.random() - 0.5).forEach(el => container.appendChild(el));
 
-    bindDropZones(); 
+// Add event listeners uniformly to all inputs and selects for mobile fix
+    el.querySelectorAll('select, input').forEach(child => {
+        child.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            el.draggable = false;
+        });
+        child.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+            el.draggable = false;
+        }, { passive: false });
+        child.addEventListener('touchend', (e) => {
+            e.stopPropagation();
+            child.focus();
+        }, { passive: false });
+        child.addEventListener('blur', () => {
+            el.draggable = true;
+        });
+    });
+
+    el.addEventListener('dragstart', function(e) { draggedBlock = this; setTimeout(() => this.classList.add('opacity-50'), 0); });
+    el.addEventListener('dragend', function() { setTimeout(() => this.classList.remove('opacity-50'), 0); draggedBlock = null; });
+    return el;
+});
+blocksHTML.sort(() => Math.random() - 0.5).forEach(el => container.appendChild(el));
+
+bindDropZones(); 
 }
 
 // --- DRAG & DROP LOGIC ---
