@@ -5,61 +5,63 @@ let draggedBlock = null;
 let typewriterInterval = null;
 let fullStoryText = "";
 let isTyping = false;
-
-// --- LEVEL DATA ---
+// --- LEVEL DATA (SMART OFFICE) ---
 const levelsData = {
     1: {
-        title: "Level 1: Basic Concepts",
+        title: "Level 1: Basic Output",
         shortTitle: "พื้นฐานและการแสดงผล",
         icon: "💡",
         workspaceType: "sequence",
-        scenario: "> ระบบเริ่มทำงาน...\n> ในเกมเป็นเวลากลางคืน ฟาร์มมืดสนิท\n> ภารกิจ (The Dark Night): ทดสอบหน้าจอ LED โดยแสดงข้อความ 'LIGHT ON' และชื่อของคุณเป็นภาษาอังกฤษ!",
-        desc: "ลากบล็อกคำสั่งเรียงตามลำดับเพื่อทำงานแบบเป็นขั้นเป็นตอน (Sequence):\n1. พิมพ์และแสดงผลข้อความ 'LIGHT ON' (ตัวพิมพ์ใหญ่เป๊ะๆ)\n2. หน่วงเวลา (Delay) 2 วินาที\n3. พิมพ์และแสดงผลชื่อภาษาอังกฤษของคุณ (ห้ามซ้ำกับ LIGHT ON)",
+        scenario: "> ระบบเริ่มทำงาน...\n> ยินดีต้อนรับสู่สำนักงานอัจฉริยะ (Smart Office)!\n> ภารกิจ (Welcome to the Office): ทดสอบหน้าจอแสดงผลต้อนรับพนักงาน โดยให้พิมพ์ข้อความ 'WELCOME' แบบเลื่อน หน่วงเวลา 2 วินาที และแสดงชื่อเป็นภาษาอังกฤษ",
+        desc: "ลากบล็อกคำสั่งเรียงตามลำดับเพื่อทำงานแบบเป็นขั้นเป็นตอน (Sequence):\n1. พิมพ์ข้อความ 'WELCOME' แบบเลื่อน (LED Scroll)\n2. หน่วงเวลา (Delay) 2 วินาที\n3. พิมพ์และแสดงผลชื่อภาษาอังกฤษของคุณ (ห้ามซ้ำกับ WELCOME)",
         blocks: [
-            { text: 'LED 16x8 = ', isInput: true, placeholder: 'พิมพ์ข้อความ...', type: 'action-led', class: 'action-block' },
-            { text: 'Delay 2 sec', isInput: false, type: 'delay', class: 'delay-block' },
-            { text: 'LED 16x8 = ', isInput: true, placeholder: 'พิมพ์ชื่อ (Eng)...', type: 'action-led', class: 'action-block' } 
+            { type: 'action-scroll', class: 'action-block', isComplex: true, 
+                html: `<div class="flex items-center justify-center w-full">LED Scroll <span class="mx-2 font-bold text-green-100">=</span> <input type="text" class="block-input text-gray-900 bg-white px-2 py-1 rounded w-24 text-sm font-bold text-center shadow-sm outline-none placeholder-gray-400" placeholder="พิมพ์ข้อความ"></div>` },
+            { type: 'delay', class: 'delay-block', isComplex: true, 
+                html: `<div class="flex items-center justify-center w-full">Delay <input type="number" class="block-input text-gray-900 bg-white px-2 py-1 rounded w-16 text-sm font-bold text-center mx-2 shadow-sm outline-none" value="2"> sec</div>` },
+            { type: 'action-scroll', class: 'action-block', isComplex: true, 
+                html: `<div class="flex items-center justify-center w-full">LED Scroll <span class="mx-2 font-bold text-green-100">=</span> <input type="text" class="block-input text-gray-900 bg-white px-2 py-1 rounded w-24 text-sm font-bold text-center shadow-sm outline-none placeholder-gray-400" placeholder="พิมพ์ชื่อ (Eng)"></div>` } 
         ]
     },
     2: {
         title: "Level 2: Sensors & Logic",
         shortTitle: "การรับค่าและเงื่อนไข",
-        icon: "🌡️",
+        icon: "🖥️",
         workspaceType: "dynamic-ifelse",
-        scenario: "> ประกาศเตือนภัยฉุกเฉินระดับ 2!\n> แถบวัดอุณหภูมิในเกมพุ่งสูงขึ้น (Temp > 30) ต้นไม้เริ่มเหี่ยว\n> ภารกิจ (Heat Wave Alert): ใช้บล็อก If-Else อ่านค่า Temperature Sensor เพื่อควบคุมพัดลม",
-        desc: "การใช้บล็อกคำสั่งทางตรรกะ (Logic):\n1. ลากบล็อกโครงสร้าง **IF...DO...ELSE** ไปวางในพื้นที่ทำงานก่อน\n2. ลากบล็อกเซนเซอร์และพัดลมไปใส่ในช่องว่างให้สมบูรณ์\n\n* สามารถคลิกเพื่อปรับเปลี่ยนตัวเลข และสถานะ ON/OFF ได้",
+        scenario: "> ประกาศเตือนภัยฉุกเฉินระดับ 2!\n> อุณหภูมิในห้องเซิร์ฟเวอร์ (Server Room) พุ่งสูงขึ้น เสี่ยงต่อความเสียหาย\n> ภารกิจ (Server Room Meltdown): ใช้บล็อก If-Else อ่านค่าเซนเซอร์อุณหภูมิ เพื่อควบคุมพัดลมระบายอากาศผ่านพอร์ต USB",
+        desc: "การใช้บล็อกคำสั่งทางตรรกะ (Logic):\n1. ลากบล็อกโครงสร้าง **IF...DO...ELSE** ไปวางเป็นฐานก่อน\n2. ลากบล็อกเซนเซอร์และอุปกรณ์ USB ไปใส่ในช่องว่าง\n\nเงื่อนไข: ถ้าอุณหภูมิ >= 25 ให้ USB ทำงาน (ON) มิฉะนั้น ให้ USB หยุดทำงาน (OFF)",
         blocks: [
             { type: 'structure-ifelse', class: 'structure-block', text: 'IF ... DO ... ELSE' },
             { type: 'sensor', class: 'sensor-block', isComplex: true,
-                html: `<div class="flex items-center justify-center w-full"><span class="sensor-type hidden">temp</span>Temp <select class="op-sel text-gray-900 bg-white px-1 py-0.5 rounded mx-2 font-bold shadow-sm outline-none cursor-pointer text-sm"><option value=">">&gt;</option><option value="<">&lt;</option><option value="=">=</option></select> <input type="number" class="val-input text-gray-900 bg-white px-2 py-0.5 rounded w-16 text-sm font-bold text-center shadow-sm outline-none" placeholder="°C"></div>` },
+                html: `<div class="flex items-center justify-center w-full"><span class="sensor-type hidden">temp</span>Temp <select class="op-sel text-gray-900 bg-white px-1 py-0.5 rounded mx-2 font-bold shadow-sm outline-none cursor-pointer text-sm"><option value=">">&gt;</option><option value="<">&lt;</option><option value=">=">&gt;=</option><option value="<=">&lt;=</option><option value="=">=</option></select> <input type="number" class="val-input text-gray-900 bg-white px-2 py-0.5 rounded w-16 text-sm font-bold text-center shadow-sm outline-none" placeholder="°C"></div>` },
             { type: 'action', class: 'action-block', isComplex: true,
-                html: `<div class="flex items-center justify-center w-full"><span class="action-type hidden">fan</span>Fan <span class="mx-2 font-bold text-green-100">=</span> <select class="stat-sel text-gray-900 bg-white px-2 py-0.5 rounded font-bold shadow-sm outline-none cursor-pointer text-sm"><option value="ON">ON</option><option value="OFF">OFF</option></select></div>` },
+                html: `<div class="flex items-center justify-center w-full"><span class="action-type hidden">usb</span>USB Status <span class="mx-2 font-bold text-green-100">=</span> <select class="stat-sel text-gray-900 bg-white px-2 py-0.5 rounded font-bold shadow-sm outline-none cursor-pointer text-sm"><option value="ON">ON</option><option value="OFF">OFF</option></select></div>` },
             { type: 'action', class: 'action-block', isComplex: true,
-                html: `<div class="flex items-center justify-center w-full"><span class="action-type hidden">fan</span>Fan <span class="mx-2 font-bold text-green-100">=</span> <select class="stat-sel text-gray-900 bg-white px-2 py-0.5 rounded font-bold shadow-sm outline-none cursor-pointer text-sm"><option value="OFF">OFF</option><option value="ON">ON</option></select></div>` }
+                html: `<div class="flex items-center justify-center w-full"><span class="action-type hidden">usb</span>USB Status <span class="mx-2 font-bold text-green-100">=</span> <select class="stat-sel text-gray-900 bg-white px-2 py-0.5 rounded font-bold shadow-sm outline-none cursor-pointer text-sm"><option value="OFF">OFF</option><option value="ON">ON</option></select></div>` }
         ]
     },
     3: {
         title: "Level 3: Automation Challenge",
-        shortTitle: "ตรรกะเชิงซ้อนแบบสมบูรณ์",
+        shortTitle: "ระบบห้องประชุมอัจฉริยะ",
         icon: "⚙️",
         workspaceType: "dynamic-ifelse",
-        scenario: "> เข้าสู่ระบบอัตโนมัติขั้นสูง...\n> ระบบต้องการการดูแลอัตโนมัติสมบูรณ์แบบ ทั้งแสงและอุณหภูมิ\n> ภารกิจ (Smart System): เขียนโปรแกรมรวมโดยใช้บล็อกตรรกะ (AND) ควบคุม 2 ระบบพร้อมกัน!",
-        desc: "1. ลากโครงสร้าง **IF...DO...ELSE** ไปวางในพื้นที่ทำงาน\n2. ลากบล็อกตรรกะ **[ ] AND/OR [ ]** สีม่วงไปวางใส่ในช่อง IF\n3. ประกอบเซนเซอร์และอุปกรณ์ให้ครบถ้วน\n\nเงื่อนไข: ถ้า (อุณหภูมิ > 30) AND (แสง < 30) ให้เปิดพัดลมและไฟพร้อมกัน มิฉะนั้นปิดทั้งหมด",
+        scenario: "> เข้าสู่ระบบจัดการห้องประชุมอัจฉริยะ...\n> ห้องประชุมต้องพร้อมทำงานอัตโนมัติเมื่อมีคนอยู่ (อุณหภูมิห้องสูงขึ้นและแสงมืดลง)\n> ภารกิจ (Smart Meeting Room): เขียนโปรแกรมรวมโดยใช้ตรรกะ AND เพื่อเปิดแอร์และไฟพร้อมกัน!",
+        desc: "1. ลากโครงสร้าง **IF...DO...ELSE** ไปวางในพื้นที่ทำงาน\n2. ลากบล็อกตรรกะ **[ ] AND/OR [ ]** สีม่วงไปวางใส่ในช่อง IF\n3. ประกอบเซนเซอร์และอุปกรณ์ให้ครบถ้วน\n\nเงื่อนไข: ถ้า (อุณหภูมิ > 25) AND (แสง < 40)\nให้เปิดแอร์ (USB=ON) และเปิดไฟ (LED=ON)\nมิฉะนั้น ปิดแอร์และปิดไฟ",
         blocks: [
             { type: 'structure-ifelse', class: 'structure-block', text: 'IF ... DO ... ELSE' },
             { type: 'logic-and', class: 'logic-block', text: '[ ] AND / OR [ ]' },
             { type: 'sensor', class: 'sensor-block', isComplex: true,
-                html: `<div class="flex items-center justify-center w-full"><span class="sensor-type hidden">temp</span>Temp <select class="op-sel text-gray-900 bg-white px-1 py-0.5 rounded mx-1 font-bold shadow-sm outline-none cursor-pointer text-sm"><option value=">">&gt;</option><option value="<">&lt;</option><option value="=">=</option></select> <input type="number" class="val-input text-gray-900 bg-white px-1 py-0.5 rounded w-14 text-sm font-bold text-center shadow-sm outline-none" placeholder="°C"></div>` },
+                html: `<div class="flex items-center justify-center w-full"><span class="sensor-type hidden">temp</span>Temp <select class="op-sel text-gray-900 bg-white px-1 py-0.5 rounded mx-1 font-bold shadow-sm outline-none cursor-pointer text-sm"><option value=">">&gt;</option><option value="<">&lt;</option><option value=">=">&gt;=</option><option value="=">=</option></select> <input type="number" class="val-input text-gray-900 bg-white px-1 py-0.5 rounded w-14 text-sm font-bold text-center shadow-sm outline-none" placeholder="°C"></div>` },
             { type: 'sensor', class: 'sensor-block', isComplex: true,
-                html: `<div class="flex items-center justify-center w-full"><span class="sensor-type hidden">light</span>Light <select class="op-sel text-gray-900 bg-white px-1 py-0.5 rounded mx-1 font-bold shadow-sm outline-none cursor-pointer text-sm"><option value=">">&gt;</option><option value="<">&lt;</option><option value="=">=</option></select> <input type="number" class="val-input text-gray-900 bg-white px-1 py-0.5 rounded w-14 text-sm font-bold text-center shadow-sm outline-none" placeholder="Lux"></div>` },
+                html: `<div class="flex items-center justify-center w-full"><span class="sensor-type hidden">light</span>Light <select class="op-sel text-gray-900 bg-white px-1 py-0.5 rounded mx-1 font-bold shadow-sm outline-none cursor-pointer text-sm"><option value=">">&gt;</option><option value="<">&lt;</option><option value="<=">&lt;=</option><option value="=">=</option></select> <input type="number" class="val-input text-gray-900 bg-white px-1 py-0.5 rounded w-14 text-sm font-bold text-center shadow-sm outline-none" placeholder="Lux"></div>` },
             { type: 'action', class: 'action-block', isComplex: true,
-                html: `<div class="flex items-center justify-center w-full"><span class="action-type hidden">fan</span>Fan <span class="mx-2 font-bold text-green-100">=</span> <select class="stat-sel text-gray-900 bg-white px-1 py-0.5 rounded font-bold shadow-sm outline-none cursor-pointer text-sm"><option value="ON">ON</option><option value="OFF">OFF</option></select></div>` },
+                html: `<div class="flex items-center justify-center w-full"><span class="action-type hidden">usb</span>USB Status <span class="mx-2 font-bold text-green-100">=</span> <select class="stat-sel text-gray-900 bg-white px-1 py-0.5 rounded font-bold shadow-sm outline-none cursor-pointer text-sm"><option value="ON">ON</option><option value="OFF">OFF</option></select></div>` },
             { type: 'action', class: 'action-block', isComplex: true,
-                html: `<div class="flex items-center justify-center w-full"><span class="action-type hidden">fan</span>Fan <span class="mx-2 font-bold text-green-100">=</span> <select class="stat-sel text-gray-900 bg-white px-1 py-0.5 rounded font-bold shadow-sm outline-none cursor-pointer text-sm"><option value="OFF">OFF</option><option value="ON">ON</option></select></div>` },
+                html: `<div class="flex items-center justify-center w-full"><span class="action-type hidden">usb</span>USB Status <span class="mx-2 font-bold text-green-100">=</span> <select class="stat-sel text-gray-900 bg-white px-1 py-0.5 rounded font-bold shadow-sm outline-none cursor-pointer text-sm"><option value="OFF">OFF</option><option value="ON">ON</option></select></div>` },
             { type: 'action', class: 'action-block', isComplex: true,
-                html: `<div class="flex items-center justify-center w-full"><span class="action-type hidden">led</span>LED <span class="mx-2 font-bold text-green-100">=</span> <select class="stat-sel text-gray-900 bg-white px-1 py-0.5 rounded font-bold shadow-sm outline-none cursor-pointer text-sm"><option value="ON">ON</option><option value="OFF">OFF</option></select></div>` },
+                html: `<div class="flex items-center justify-center w-full"><span class="action-type hidden">led</span>LED 16x8 <span class="mx-2 font-bold text-green-100">=</span> <select class="stat-sel text-gray-900 bg-white px-1 py-0.5 rounded font-bold shadow-sm outline-none cursor-pointer text-sm"><option value="ON">ON</option><option value="OFF">OFF</option></select></div>` },
             { type: 'action', class: 'action-block', isComplex: true,
-                html: `<div class="flex items-center justify-center w-full"><span class="action-type hidden">led</span>LED <span class="mx-2 font-bold text-green-100">=</span> <select class="stat-sel text-gray-900 bg-white px-1 py-0.5 rounded font-bold shadow-sm outline-none cursor-pointer text-sm"><option value="OFF">OFF</option><option value="ON">ON</option></select></div>` }
+                html: `<div class="flex items-center justify-center w-full"><span class="action-type hidden">led</span>LED 16x8 <span class="mx-2 font-bold text-green-100">=</span> <select class="stat-sel text-gray-900 bg-white px-1 py-0.5 rounded font-bold shadow-sm outline-none cursor-pointer text-sm"><option value="OFF">OFF</option><option value="ON">ON</option></select></div>` }
         ]
     }
 };
@@ -84,9 +86,9 @@ function renderLevelSelect() {
             card.className = "bg-gray-100 border-2 border-gray-200 rounded-2xl p-6 flex flex-col items-center justify-center text-gray-400 cursor-not-allowed h-48";
             card.innerHTML = `<svg class="w-12 h-12 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg><h3 class="text-xl font-bold">Level ${i}</h3><p class="text-sm mt-1">ถูกล็อก</p>`;
         } else {
-            card.className = "bg-white border-2 border-green-400 rounded-2xl p-6 flex flex-col items-center justify-center text-green-700 cursor-pointer hover:bg-green-50 hover:border-green-500 hover:shadow-lg transition-all transform hover:-translate-y-1 h-48";
+            card.className = "bg-white border-2 border-blue-400 rounded-2xl p-6 flex flex-col items-center justify-center text-blue-700 cursor-pointer hover:bg-blue-50 hover:border-blue-500 hover:shadow-lg transition-all transform hover:-translate-y-1 h-48";
             card.onclick = () => startStory(i);
-            card.innerHTML = `<div class="w-14 h-14 mb-3 bg-green-100 rounded-full flex items-center justify-center text-3xl shadow-inner">${data.icon}</div><h3 class="text-xl font-bold">Level ${i}</h3><p class="text-sm text-center text-gray-600 mt-2 font-medium">${data.shortTitle}</p>`;
+            card.innerHTML = `<div class="w-14 h-14 mb-3 bg-blue-100 rounded-full flex items-center justify-center text-3xl shadow-inner">${data.icon}</div><h3 class="text-xl font-bold">Level ${i}</h3><p class="text-sm text-center text-gray-600 mt-2 font-medium">${data.shortTitle}</p>`;
         }
         container.appendChild(card);
     }
@@ -187,18 +189,18 @@ function getAndTemplate() {
 function buildWorkspaceHTML(type) {
     if (type === 'sequence') {
         return `
-            <p class="text-sm text-gray-500 mb-3 font-medium text-center">ระบบจะประมวลผลคำสั่งจากบนลงล่างตามลำดับ (Sequential)</p>
+            <p class="text-sm text-white-500 mb-3 font-medium text-center">ระบบจะประมวลผลคำสั่งจากบนลงล่างตามลำดับ (Sequential)</p>
             <div class="flex items-center gap-2 mb-3">
-                <span class="font-bold text-blue-700 w-16">STEP 1</span>
-                <div class="drop-zone flex-1 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 text-sm p-2" id="drop-step1" data-expected="action-led" data-text="วางคำสั่งที่ 1">วางคำสั่งที่ 1</div>
+                <span class="font-bold text-blue-300 w-16">STEP 1</span>
+                <div class="drop-zone flex-1 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 text-sm p-2" id="drop-step1" data-expected="action-scroll" data-text="วางคำสั่งที่ 1 (แบบเลื่อน)">วางคำสั่งที่ 1 (แบบเลื่อน)</div>
             </div>
             <div class="flex items-center gap-2 mb-3">
-                <span class="font-bold text-amber-600 w-16">WAIT</span>
+                <span class="font-bold text-amber-400 w-16">WAIT</span>
                 <div class="drop-zone flex-1 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 text-sm p-2" id="drop-step2" data-expected="delay" data-text="วางคำสั่งหน่วงเวลา">วางคำสั่งหน่วงเวลา</div>
             </div>
             <div class="flex items-center gap-2 mb-3">
-                <span class="font-bold text-blue-700 w-16">STEP 2</span>
-                <div class="drop-zone flex-1 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 text-sm p-2" id="drop-step3" data-expected="action-led" data-text="วางคำสั่งที่ 2">วางคำสั่งที่ 2</div>
+                <span class="font-bold text-blue-300 w-16">STEP 2</span>
+                <div class="drop-zone flex-1 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 text-sm p-2" id="drop-step3" data-expected="action-scroll" data-text="วางคำสั่งที่ 2 (แบบเลื่อน)">วางคำสั่งที่ 2 (แบบเลื่อน)</div>
             </div>
         `;
     } else {
@@ -217,10 +219,8 @@ function preparePuzzle(level) {
     document.getElementById('puzzle-title').innerText = data.title;
     document.getElementById('puzzle-desc').innerHTML = data.desc.replace(/\n/g, '<br>');
     
-    // Inject dynamic workspace
     document.getElementById('workspace-container').innerHTML = buildWorkspaceHTML(data.workspaceType);
     
-    // Generate Draggable Blocks
     const container = document.getElementById('block-container');
     container.innerHTML = '';
     
@@ -230,9 +230,7 @@ function preparePuzzle(level) {
         el.draggable = true;
         el.setAttribute('data-type', b.type);
         
-        if (b.isInput) {
-            el.innerHTML = `${b.text} <input type="text" class="block-input text-gray-900 px-2 py-1 rounded mt-2 w-full text-sm font-bold text-center border-2 border-transparent focus:border-green-400 focus:outline-none placeholder-gray-400" placeholder="${b.placeholder}" onmousedown="event.stopPropagation()" onfocus="this.parentElement.draggable=false" onblur="this.parentElement.draggable=true">`;
-        } else if (b.isComplex) {
+        if (b.isComplex) {
             el.innerHTML = b.html;
             el.querySelectorAll('select, input').forEach(child => {
                 child.onmousedown = (e) => e.stopPropagation();
@@ -242,37 +240,45 @@ function preparePuzzle(level) {
         } else {
             el.innerText = b.text;
         }
-        
-        el.addEventListener('dragstart', function(e) { draggedBlock = this; setTimeout(() => this.classList.add('opacity-50'), 0); });
-        el.addEventListener('dragend', function() { setTimeout(() => this.classList.remove('opacity-50'), 0); draggedBlock = null; });
         return el;
     });
     blocksHTML.sort(() => Math.random() - 0.5).forEach(el => container.appendChild(el));
 
-    bindDropZones(); // Re-bind events
+    bindDropZones(); 
 }
 
 // --- DRAG & DROP LOGIC ---
 function bindDropZones() {
+    let draggedEl = null;
+
+    document.querySelectorAll('.block-item').forEach(block => {
+        block.ondragstart = function(e) {
+            draggedEl = this;
+            setTimeout(() => this.classList.add('opacity-50'), 0);
+        };
+        block.ondragend = function(e) {
+            setTimeout(() => this.classList.remove('opacity-50'), 0);
+            draggedEl = null;
+        };
+    });
+
     document.querySelectorAll('.drop-zone').forEach(zone => {
-        // Using property assignments to prevent multiple event listeners without cloneNode issue
         zone.ondragover = function(e) { e.preventDefault(); this.classList.add('drag-over'); };
         zone.ondragleave = function(e) { this.classList.remove('drag-over'); };
         zone.ondrop = function(e) {
             e.preventDefault();
             this.classList.remove('drag-over');
-            if (draggedBlock) {
+            if (draggedEl) {
                 const expectedType = this.getAttribute('data-expected');
-                const blockType = draggedBlock.getAttribute('data-type');
+                const blockType = draggedEl.getAttribute('data-type');
                 
-                // Strict rules for structural drops
                 if (expectedType === 'structure-ifelse') {
                     if (blockType !== 'structure-ifelse') {
                         showToast("ต้องวางบล็อกโครงสร้าง IF-DO-ELSE (สีม่วง) ก่อนครับ!");
                         return;
                     }
                     this.outerHTML = getIfElseTemplate(currentLevel);
-                    draggedBlock.remove(); // Consume the block
+                    draggedEl.remove(); 
                     bindDropZones();
                     return;
                 }
@@ -283,12 +289,11 @@ function bindDropZones() {
                         return;
                     }
                     this.outerHTML = getAndTemplate();
-                    draggedBlock.remove();
+                    draggedEl.remove();
                     bindDropZones();
                     return;
                 }
 
-                // Strict dropping for level 1
                 if (currentLevel === 1 && expectedType && !blockType.includes(expectedType) && expectedType !== blockType) {
                     showToast("ประเภทบล็อกไม่ตรงกับช่องนี้!");
                     return;
@@ -299,25 +304,22 @@ function bindDropZones() {
                 this.innerHTML = '';
                 this.classList.add('bg-white', 'border-transparent');
                 
-                // Ensure dropped block fits perfectly
-                draggedBlock.style.width = '100%';
-                draggedBlock.style.margin = '0';
-                this.appendChild(draggedBlock);
+                draggedEl.style.width = '100%';
+                draggedEl.style.margin = '0';
+                this.appendChild(draggedEl);
             }
         };
     });
 
-    // Container drop zone (returning blocks to inventory)
     const blockContainer = document.getElementById('block-container');
     blockContainer.ondragover = function(e) { e.preventDefault(); };
     blockContainer.ondrop = function(e) {
         e.preventDefault();
-        if (draggedBlock) {
-            draggedBlock.style.width = 'fit-content';
-            draggedBlock.style.margin = '0 auto';
-            this.appendChild(draggedBlock);
+        if (draggedEl) {
+            draggedEl.style.width = 'fit-content';
+            draggedEl.style.margin = '0 auto';
+            this.appendChild(draggedEl);
             
-            // Reset placeholder text in empty zones
             document.querySelectorAll('.drop-zone').forEach(z => {
                 if (z.children.length === 0 && z.getAttribute('data-text')) {
                     z.innerHTML = z.getAttribute('data-text');
@@ -343,6 +345,8 @@ function evalSensor(blockEl, currentTemp, currentLight) {
     let result = false;
     if (op === '>') result = currentVal > val;
     else if (op === '<') result = currentVal < val;
+    else if (op === '>=') result = currentVal >= val;
+    else if (op === '<=') result = currentVal <= val;
     else if (op === '=') result = currentVal == val;
 
     return {
@@ -362,7 +366,7 @@ function evalAction(blockEl) {
     
     let aType = blockEl.querySelector('.action-type').innerText.trim().toLowerCase();
     let stat = blockEl.querySelector('.stat-sel').value;
-    return { valid: true, type: aType, stat: stat, text: `${aType==="fan"?"Fan":"LED"} = ${stat}` };
+    return { valid: true, type: aType, stat: stat, text: `${aType==="usb"?"USB":"LED"} = ${stat}` };
 }
 
 // --- SIMULATION LOGIC ---
@@ -372,7 +376,6 @@ async function runSimulation() {
     const data = levelsData[currentLevel];
     let isPerfect = false;
 
-    // Structure Check
     if (currentLevel > 1) {
         if (!document.getElementById('structure-ifelse-container')) {
             showToast("คุณยังไม่ได้วางโครงสร้างบล็อกหลักเลยครับ!");
@@ -384,7 +387,6 @@ async function runSimulation() {
         }
     }
 
-    // Count logic
     let expectedCount = currentLevel === 1 ? 3 : (currentLevel === 2 ? 3 : 6);
     let blocksPlaced = 0;
     document.querySelectorAll('.drop-zone').forEach(z => { if (z.querySelector('.block-item')) blocksPlaced++; });
@@ -394,7 +396,6 @@ async function runSimulation() {
         return;
     }
 
-    // Prep Modal
     const modal = document.getElementById('simModal');
     const logContainer = document.getElementById('sim-log-container');
     const iconEl = document.getElementById('sim-visual-icon');
@@ -420,7 +421,7 @@ async function runSimulation() {
     modal.classList.add('flex');
 
     if (data.workspaceType === 'sequence') {
-        // LEVEL 1: Sequential Simulation
+        // LEVEL 1
         document.getElementById('sim-trigger').innerText = "รันโปรแกรมตามลำดับขั้น (Sequence)";
         const steps = [
             document.querySelector('#drop-step1 .block-item'),
@@ -436,20 +437,21 @@ async function runSimulation() {
             
             let blockText = stepEl.innerText;
             let val = "";
-            if (stepEl.querySelector('input')) {
+            
+            if (sType === 'action-scroll') {
                 val = stepEl.querySelector('input').value.trim();
-                blockText = `LED 16x8 = "${val}"`;
-            }
-            
-            logContainer.innerHTML += `<p class="mb-2 text-blue-600 font-bold">▶ รันคำสั่งที่ ${i+1}: <span class="text-gray-700 font-normal">${blockText}</span></p>`;
-            
-            if (sType === 'action-led') {
+                blockText = `LED Scroll = "${val}"`;
+                let logColor = (i === 0) ? 'text-blue-600' : 'text-green-600';
+                logContainer.innerHTML += `<p class="mb-2 ${logColor} font-bold">▶ รันคำสั่งที่ ${i+1}: <span class="text-gray-700 font-normal">${blockText}</span></p>`;
                 iconEl.innerHTML = `<div class="led-screen"><span class="led-text">${val || " "}</span></div>`;
-                textEl.innerText = `แสดงผล: ${val || "(ว่าง)"}`;
-                await sleep(2500); 
+                textEl.innerText = `เลื่อนข้อความ: ${val || "(ว่าง)"}`;
+                await sleep(3000);
             } else if (sType === 'delay') {
+                val = stepEl.querySelector('input').value;
+                blockText = `Delay ${val} sec`;
+                logContainer.innerHTML += `<p class="mb-2 text-amber-600 font-bold">▶ รันคำสั่งที่ ${i+1}: <span class="text-gray-700 font-normal">${blockText}</span></p>`;
                 iconEl.innerHTML = '⏳';
-                textEl.innerText = 'กำลังหน่วงเวลา 2 วินาที...';
+                textEl.innerText = `กำลังหน่วงเวลา ${val} วินาที...`;
                 await sleep(2000);
             } else {
                 iconEl.innerHTML = '❓';
@@ -458,9 +460,9 @@ async function runSimulation() {
             }
         }
 
-        if (steps[0].getAttribute('data-type') !== 'action-led' || 
+        if (steps[0].getAttribute('data-type') !== 'action-scroll' || 
             steps[1].getAttribute('data-type') !== 'delay' || 
-            steps[2].getAttribute('data-type') !== 'action-led') {
+            steps[2].getAttribute('data-type') !== 'action-scroll') {
             structError = true;
         }
 
@@ -468,8 +470,8 @@ async function runSimulation() {
         let val3 = steps[2].querySelector('input') ? steps[2].querySelector('input').value.trim() : "";
 
         if (!structError) {
-            if (val1 !== "LIGHT ON") textError1 = true;
-            if (!/^[A-Za-z\s]+$/.test(val3) || val3.length < 1 || val3 === "LIGHT ON") textError2 = true;
+            if (val1 !== "WELCOME") textError1 = true;
+            if (!/^[A-Za-z\s]+$/.test(val3) || val3.length < 1 || val3 === "WELCOME") textError2 = true;
         }
 
         isPerfect = !structError && !textError1 && !textError2;
@@ -479,29 +481,30 @@ async function runSimulation() {
         if (isPerfect) {
             logContainer.innerHTML += `<p class="text-green-600 font-bold text-sm">✅ โค้ดสมบูรณ์ ลำดับและข้อความถูกต้อง!</p>`;
         } else {
-            if (structError) logContainer.innerHTML += `<p class="text-red-600 font-bold text-sm">❌ โครงสร้างผิด (ต้องเรียง: LED -> Delay -> LED)</p>`;
+            if (structError) logContainer.innerHTML += `<p class="text-red-600 font-bold text-sm">❌ โครงสร้างผิด (ต้องเรียง: LED Scroll -> Delay -> LED Scroll)</p>`;
             else {
-                if (textError1) logContainer.innerHTML += `<p class="text-red-600 font-bold text-sm mb-1">❌ ข้อความแรกต้องเป็นคำว่า "LIGHT ON" แบบเป๊ะๆ</p>`;
-                if (textError2) logContainer.innerHTML += `<p class="text-red-600 font-bold text-sm">❌ ชื่อต้องเป็นภาษาอังกฤษเท่านั้น ห้ามเว้นว่าง และห้ามซ้ำกับ LIGHT ON</p>`;
+                if (textError1) logContainer.innerHTML += `<p class="text-red-600 font-bold text-sm mb-1">❌ ข้อความแรกต้องเป็นคำว่า "WELCOME" แบบเป๊ะๆ</p>`;
+                if (textError2) logContainer.innerHTML += `<p class="text-red-600 font-bold text-sm">❌ ชื่อต้องเป็นภาษาอังกฤษเท่านั้น ห้ามเว้นว่าง และห้ามซ้ำกับ WELCOME</p>`;
             }
         }
 
     } else if (data.workspaceType === 'dynamic-ifelse' && currentLevel === 2) {
-        // LEVEL 2: Dynamic If-Else Dynamic evaluation
+        // LEVEL 2
         const condEl = document.querySelector('#drop-condition .block-item');
         const trueEl = document.querySelector('#drop-true1 .block-item');
         const falseEl = document.querySelector('#drop-false1 .block-item');
 
-        document.getElementById('sim-trigger').innerText = "เซนเซอร์วัดค่าได้: Temp = 38°C (ร้อนจัด!)";
+        const testTemp = 30; // Server is heating up
+        document.getElementById('sim-trigger').innerText = `เซนเซอร์วัดค่าได้: Temp = ${testTemp}°C (ห้องเริ่มร้อน!)`;
         await sleep(800);
 
-        let c1 = evalSensor(condEl, 38, 0); // temp=38
+        let c1 = evalSensor(condEl, testTemp, 0); 
         if (!c1.valid) {
             logContainer.innerHTML += `<p class="mb-2"><span class="text-indigo-500 font-bold">▶ ผลลัพธ์:</span> <span class="font-bold text-red-600">Error: ใส่บล็อกเซนเซอร์ผิดประเภท</span></p>`;
             iconEl.innerHTML = '💥'; iconEl.className += ' text-red-500 animate-bounce scale-125';
             textEl.innerText = 'โปรแกรมพัง (Syntax Error)!'; textEl.className = 'text-lg font-bold h-8 text-red-500';
         } else {
-            logContainer.innerHTML += `<p class="mb-2"><span class="text-blue-500 font-bold">▶ ตรวจสอบ IF:</span> <span class="text-gray-700 font-normal">${c1.text}</span> (ปัจจุบัน 38)</p>`;
+            logContainer.innerHTML += `<p class="mb-2"><span class="text-blue-500 font-bold">▶ ตรวจสอบ IF:</span> <span class="text-gray-700 font-normal">${c1.text}</span> (ปัจจุบัน ${testTemp})</p>`;
             await sleep(1000);
 
             logContainer.innerHTML += `<p class="mb-2"><span class="text-indigo-500 font-bold">▶ ผลลัพธ์เงื่อนไข:</span> <span class="font-bold ${c1.result ? 'text-green-600' : 'text-red-600'}">เป็น${c1.result ? 'จริง (TRUE)' : 'เท็จ (FALSE)'}</span></p>`;
@@ -520,12 +523,12 @@ async function runSimulation() {
                 logContainer.innerHTML += `<p><span class="text-green-500 font-bold">▶ รันคำสั่ง ${executedZone}:</span> <span class="bg-white px-1 border rounded text-gray-700 font-bold">${a.text}</span></p>`;
                 await sleep(800);
 
-                if (a.type === 'fan' && a.stat === 'ON') {
+                if (a.type === 'usb' && a.stat === 'ON') {
                     iconEl.innerHTML = '🌀'; iconEl.className += ' spin-fast text-blue-400 scale-125';
-                    textEl.innerText = 'พัดลมทำงาน! ระบายความร้อนได้ดี 🌿'; textEl.className = 'text-lg font-bold h-8 text-green-600';
-                } else if (a.type === 'fan' && a.stat === 'OFF') {
-                    iconEl.innerHTML = '🛑'; iconEl.className += ' dark-fade scale-125';
-                    textEl.innerText = 'พัดลมปิด! ต้นไม้เหี่ยวเฉา 🥀'; textEl.className = 'text-lg font-bold h-8 text-red-500';
+                    textEl.innerText = 'พัดลมทำงาน! ระบายความร้อนเซิร์ฟเวอร์'; textEl.className = 'text-lg font-bold h-8 text-blue-500';
+                } else if (a.type === 'usb' && a.stat === 'OFF') {
+                    iconEl.innerHTML = '💥'; iconEl.className += ' text-red-500 animate-bounce scale-125';
+                    textEl.innerText = 'พัดลมปิด! เซิร์ฟเวอร์ Overheat!'; textEl.className = 'text-lg font-bold h-8 text-red-500';
                 } else {
                     iconEl.innerHTML = '❓'; iconEl.className += ' text-orange-500 scale-125';
                     textEl.innerText = 'สั่งอุปกรณ์ผิดประเภท!'; textEl.className = 'text-lg font-bold h-8 text-orange-500';
@@ -533,22 +536,22 @@ async function runSimulation() {
             }
         }
 
-        // Level 2 Strict Check: Temp > 30, True=Fan ON, False=Fan OFF
+        // Strict check: Temp >= 25, True=USB ON, False=USB OFF
         let t1 = evalAction(trueEl);
         let f1 = evalAction(falseEl);
-        isPerfect = c1.valid && c1.type === 'temp' && c1.op === '>' && c1.inputVal === '30' &&
-                    t1.valid && t1.type === 'fan' && t1.stat === 'ON' &&
-                    f1.valid && f1.type === 'fan' && f1.stat === 'OFF';
+        isPerfect = c1.valid && c1.type === 'temp' && c1.op === '>=' && c1.inputVal === '25' &&
+                    t1.valid && t1.type === 'usb' && t1.stat === 'ON' &&
+                    f1.valid && f1.type === 'usb' && f1.stat === 'OFF';
 
         await sleep(1500);
         logContainer.innerHTML += `<hr class="my-3 border-gray-300"><p class="mb-1 text-gray-600 font-bold text-xs">▶ ตรวจสอบความสมบูรณ์...</p>`;
         logContainer.scrollTop = logContainer.scrollHeight;
         await sleep(500);
         if (isPerfect) logContainer.innerHTML += `<p class="text-green-600 font-bold text-sm">✅ โค้ดและตัวเลขเงื่อนไขเป๊ะ 100%</p>`;
-        else logContainer.innerHTML += `<p class="text-red-600 font-bold text-sm">❌ มีข้อผิดพลาด (ตรวจสอบตัวเลข และสถานะพัดลมให้ตรงโจทย์)</p>`;
+        else logContainer.innerHTML += `<p class="text-red-600 font-bold text-sm">❌ มีข้อผิดพลาด (ตรวจสอบเครื่องหมาย >= ตัวเลข 25 และสถานะ USB ให้ตรงโจทย์)</p>`;
 
     } else if (data.workspaceType === 'dynamic-ifelse' && currentLevel === 3) {
-        // LEVEL 3: Complex Logic Simulation
+        // LEVEL 3
         const cond1El = document.querySelector('#drop-cond1 .block-item');
         const cond2El = document.querySelector('#drop-cond2 .block-item');
         const logicOp = document.querySelector('.logic-sel').value; 
@@ -558,9 +561,9 @@ async function runSimulation() {
         const false1El = document.querySelector('#drop-false1 .block-item');
         const false2El = document.querySelector('#drop-false2 .block-item');
 
-        const currentTemp = 35;
-        const currentLight = 10;
-        document.getElementById('sim-trigger').innerText = `สถานะปัจจุบัน: Temp = ${currentTemp}°C และ Light = ${currentLight} Lux`;
+        const currentTemp = 30;
+        const currentLight = 20;
+        document.getElementById('sim-trigger').innerText = `สถานะปัจจุบัน: ห้องร้อน (${currentTemp}°C) และมืด (${currentLight} Lux)`;
         await sleep(800);
 
         let c1 = evalSensor(cond1El, currentTemp, currentLight);
@@ -598,25 +601,25 @@ async function runSimulation() {
                 logContainer.innerHTML += `<p><span class="text-green-500 font-bold">▶ รันคำสั่ง ${executedZone}:</span><br><span class="text-gray-700 text-xs">- ${a1.text}<br>- ${a2.text}</span></p>`;
                 await sleep(1000);
 
-                let showFan = false, showLed = false;
-                let fanOn = false, ledOn = false;
+                let showUsb = false, showLed = false;
+                let usbOn = false, ledOn = false;
 
                 [a1, a2].forEach(a => {
-                    if(a.type === 'fan') { showFan = true; fanOn = (a.stat === 'ON'); }
+                    if(a.type === 'usb') { showUsb = true; usbOn = (a.stat === 'ON'); }
                     if(a.type === 'led') { showLed = true; ledOn = (a.stat === 'ON'); }
                 });
 
                 let iconHtml = '<div class="flex gap-2">';
-                if(showFan) iconHtml += `<span class="${fanOn ? 'spin-fast text-blue-400' : 'dark-fade'} inline-block">🌀</span>`;
+                if(showUsb) iconHtml += `<span class="${usbOn ? 'spin-fast text-blue-400' : 'dark-fade'} inline-block">🌀</span>`;
                 if(showLed) iconHtml += `<span class="${ledOn ? 'glow-yellow' : 'dark-fade'} inline-block">💡</span>`;
                 iconHtml += '</div>';
                 iconEl.innerHTML = iconHtml;
 
-                if (showFan && showLed) {
-                    textEl.innerText = (fanOn && ledOn) ? "ระบบทำงานสมบูรณ์ 🌿" : "พัดลมและไฟปิด ต้นไม้ตาย 🥀";
-                    textEl.className = (fanOn && ledOn) ? "text-lg font-bold h-8 text-green-600" : "text-lg font-bold h-8 text-red-500";
+                if (showUsb && showLed) {
+                    textEl.innerText = (usbOn && ledOn) ? "ห้องประชุมพร้อมใช้งาน 🏢" : "ห้องประชุมปิดมืด 🌑";
+                    textEl.className = (usbOn && ledOn) ? "text-lg font-bold h-8 text-green-600" : "text-lg font-bold h-8 text-gray-500";
                 } else {
-                    textEl.innerText = "สั่งอุปกรณ์ซ้ำหรือผิดประเภท ❓";
+                    textEl.innerText = "สั่งอุปกรณ์ไม่ครบ ❓";
                     textEl.className = "text-lg font-bold h-8 text-orange-500";
                 }
             }
@@ -626,8 +629,8 @@ async function runSimulation() {
         // Level 3 Strict Check
         let isCondPerfect = false;
         if (c1.valid && c2.valid) {
-            let condA = (c1.type === 'temp' && c1.op === '>' && c1.inputVal === '30' && c2.type === 'light' && c2.op === '<' && c2.inputVal === '30');
-            let condB = (c1.type === 'light' && c1.op === '<' && c1.inputVal === '30' && c2.type === 'temp' && c2.op === '>' && c2.inputVal === '30');
+            let condA = (c1.type === 'temp' && c1.op === '>' && c1.inputVal === '25' && c2.type === 'light' && c2.op === '<' && c2.inputVal === '40');
+            let condB = (c1.type === 'light' && c1.op === '<' && c1.inputVal === '40' && c2.type === 'temp' && c2.op === '>' && c2.inputVal === '25');
             isCondPerfect = (condA || condB) && logicOp === 'AND';
         }
 
@@ -636,14 +639,14 @@ async function runSimulation() {
 
         let isTruePerfect = false;
         if (t1.valid && t2.valid) {
-            isTruePerfect = (t1.type === 'fan' && t1.stat === 'ON' && t2.type === 'led' && t2.stat === 'ON') ||
-                            (t1.type === 'led' && t1.stat === 'ON' && t2.type === 'fan' && t2.stat === 'ON');
+            isTruePerfect = (t1.type === 'usb' && t1.stat === 'ON' && t2.type === 'led' && t2.stat === 'ON') ||
+                            (t1.type === 'led' && t1.stat === 'ON' && t2.type === 'usb' && t2.stat === 'ON');
         }
 
         let isFalsePerfect = false;
         if (f1.valid && f2.valid) {
-            isFalsePerfect = (f1.type === 'fan' && f1.stat === 'OFF' && f2.type === 'led' && f2.stat === 'OFF') ||
-                                (f1.type === 'led' && f1.stat === 'OFF' && f2.type === 'fan' && f2.stat === 'OFF');
+            isFalsePerfect = (f1.type === 'usb' && f1.stat === 'OFF' && f2.type === 'led' && f2.stat === 'OFF') ||
+                                (f1.type === 'led' && f1.stat === 'OFF' && f2.type === 'usb' && f2.stat === 'OFF');
         }
 
         isPerfect = isCondPerfect && isTruePerfect && isFalsePerfect;
@@ -680,7 +683,6 @@ function closeSimulation(isSuccess) {
     else { showToast("ยังไม่สมบูรณ์ ลองตรวจสอบและปรับตัวเลข/ข้อความอีกครั้งนะ!"); }
 }
 
-// --- SUCCESS & TOAST ---
 function handleSuccess() {
     const modal = document.getElementById('successModal');
     const content = document.getElementById('modalContent');
@@ -700,7 +702,7 @@ function handleSuccess() {
         btn.innerText = "ไปรับภารกิจถัดไป";
         btn.onclick = () => { closeModal(); startStory(currentLevel + 1); };
     } else {
-        document.getElementById('modal-desc').innerText = "ยินดีด้วย! คุณพิชิตภารกิจ Smart Farm ครบทุกด่านแล้ว 🏆 คุณสามารถนำตรรกะนี้ไปเขียนโค้ดจริงใน KidBright ได้เลย";
+        document.getElementById('modal-desc').innerText = "ยินดีด้วย! คุณพิชิตภารกิจ Smart Office ครบทุกด่านแล้ว 🏆 คุณสามารถนำตรรกะนี้ไปเขียนโค้ดจริงใน KidBright ได้เลย";
         btn.innerText = "กลับหน้าเมนูหลัก";
         btn.onclick = () => { closeModal(); showView('view-home'); };
     }
