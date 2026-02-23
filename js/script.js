@@ -5,7 +5,6 @@ let draggedBlock = null;
 let typewriterInterval = null;
 let fullStoryText = "";
 let isTyping = false;
-buildWorkspaceHTML
 // Track scores & run attempts: { levelNumber: { score: X, total: Y, attempts: Z } }
 let userScores = {}; 
 let runAttempts = { 1: 0, 2: 0, 3: 0 }; // ระบบนับจำนวนครั้งที่กดรันโค้ด
@@ -834,3 +833,4 @@ function showToast(message) {
 
 // Init
 renderLevelSelect();
+
