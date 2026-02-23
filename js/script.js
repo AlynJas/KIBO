@@ -5,6 +5,11 @@ let draggedBlock = null;
 let typewriterInterval = null;
 let fullStoryText = "";
 let isTyping = false;
+buildWorkspaceHTML
+// Track scores & run attempts: { levelNumber: { score: X, total: Y, attempts: Z } }
+let userScores = {}; 
+let runAttempts = { 1: 0, 2: 0, 3: 0 }; // ระบบนับจำนวนครั้งที่กดรันโค้ด
+
 // --- LEVEL DATA (SMART OFFICE) ---
 const levelsData = {
     1: {
@@ -82,13 +87,29 @@ function renderLevelSelect() {
         const data = levelsData[i];
         const card = document.createElement('div');
         
+        // Fetch saved score and attempt data if any
+        let scoreText = "";
+        let scoreColor = "";
+        if (userScores[i]) {
+            let pct = userScores[i].score / userScores[i].total;
+            scoreColor = pct === 1 ? "text-green-600 bg-green-100" : "text-amber-600 bg-amber-100";
+            let attemptStr = userScores[i].attempts ? `ทดสอบการรัน: ${userScores[i].attempts} ครั้ง` : "";
+            
+            scoreText = `
+                <div class="mt-2 w-full px-3 py-1.5 rounded-lg flex flex-col items-center gap-1 ${scoreColor}">
+                    <span class="font-bold text-sm">คะแนน: ${userScores[i].score}/${userScores[i].total}</span>
+                    <span class="text-[10px] font-medium opacity-80">${attemptStr}</span>
+                </div>
+            `;
+        }
+
         if (isLocked) {
-            card.className = "bg-gray-100 border-2 border-gray-200 rounded-2xl p-6 flex flex-col items-center justify-center text-gray-400 cursor-not-allowed h-48";
+            card.className = "bg-gray-100 border-2 border-gray-200 rounded-2xl p-6 flex flex-col items-center justify-center text-gray-400 cursor-not-allowed h-56 w-full max-w-sm md:w-72";
             card.innerHTML = `<svg class="w-12 h-12 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg><h3 class="text-xl font-bold">Level ${i}</h3><p class="text-sm mt-1">ถูกล็อก</p>`;
         } else {
-            card.className = "bg-white border-2 border-blue-400 rounded-2xl p-6 flex flex-col items-center justify-center text-blue-700 cursor-pointer hover:bg-blue-50 hover:border-blue-500 hover:shadow-lg transition-all transform hover:-translate-y-1 h-48";
+            card.className = "bg-white border-2 border-blue-400 rounded-2xl p-6 flex flex-col items-center justify-center text-blue-700 cursor-pointer hover:bg-blue-50 hover:border-blue-500 hover:shadow-lg transition-all transform hover:-translate-y-1 h-56 w-full max-w-sm md:w-72";
             card.onclick = () => startStory(i);
-            card.innerHTML = `<div class="w-14 h-14 mb-3 bg-blue-100 rounded-full flex items-center justify-center text-3xl shadow-inner">${data.icon}</div><h3 class="text-xl font-bold">Level ${i}</h3><p class="text-sm text-center text-gray-600 mt-2 font-medium">${data.shortTitle}</p>`;
+            card.innerHTML = `<div class="w-14 h-14 mb-3 bg-blue-100 rounded-full flex items-center justify-center text-3xl shadow-inner">${data.icon}</div><h3 class="text-xl font-bold">Level ${i}</h3><p class="text-sm text-center text-gray-600 mt-1 font-medium leading-tight">${data.shortTitle}</p>${scoreText}`;
         }
         container.appendChild(card);
     }
@@ -96,6 +117,8 @@ function renderLevelSelect() {
 
 function startStory(level) {
     currentLevel = level;
+    runAttempts[level] = 0; // รีเซ็ตการนับจำนวนครั้งเมื่อเริ่มเล่นด่านใหม่
+    
     const data = levelsData[level];
     
     document.getElementById('story-title').innerText = data.title;
@@ -189,18 +212,22 @@ function getAndTemplate() {
 function buildWorkspaceHTML(type) {
     if (type === 'sequence') {
         return `
-            <p class="text-sm text-white-500 mb-3 font-medium text-center">ระบบจะประมวลผลคำสั่งจากบนลงล่างตามลำดับ (Sequential)</p>
-            <div class="flex items-center gap-2 mb-3">
-                <span class="font-bold text-blue-300 w-16">STEP 1</span>
-                <div class="drop-zone flex-1 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 text-sm p-2" id="drop-step1" data-expected="action-scroll" data-text="วางคำสั่งที่ 1 (แบบเลื่อน)">วางคำสั่งที่ 1 (แบบเลื่อน)</div>
-            </div>
-            <div class="flex items-center gap-2 mb-3">
-                <span class="font-bold text-amber-400 w-16">WAIT</span>
-                <div class="drop-zone flex-1 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 text-sm p-2" id="drop-step2" data-expected="delay" data-text="วางคำสั่งหน่วงเวลา">วางคำสั่งหน่วงเวลา</div>
-            </div>
-            <div class="flex items-center gap-2 mb-3">
-                <span class="font-bold text-blue-300 w-16">STEP 2</span>
-                <div class="drop-zone flex-1 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 text-sm p-2" id="drop-step3" data-expected="action-scroll" data-text="วางคำสั่งที่ 2 (แบบเลื่อน)">วางคำสั่งที่ 2 (แบบเลื่อน)</div>
+            <div class="bg-[#1e3a8a] rounded-xl p-5 shadow-lg border-2 border-blue-800 w-full animate-[fadeIn_0.3s_ease-out]">
+                <p class="text-sm text-white mb-4 font-bold text-center bg-blue-900/40 py-2 px-4 rounded-lg border border-blue-700/50 shadow-inner">
+                    ระบบจะประมวลผลคำสั่งจากบนลงล่างตามลำดับ (Sequential)
+                </p>
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="font-bold text-blue-300 text-lg w-16 text-right drop-shadow-sm">STEP 1</span>
+                    <div class="drop-zone flex-1 border-2 border-dashed border-blue-400 rounded-lg bg-white/95 flex items-center justify-center text-blue-700 text-sm font-bold p-3 shadow-inner min-h-[54px]" id="drop-step1" data-expected="action-scroll" data-text="วางคำสั่งที่ 1 (แบบเลื่อน)">วางคำสั่งที่ 1 (แบบเลื่อน)</div>
+                </div>
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="font-bold text-amber-400 text-lg w-16 text-right drop-shadow-sm">WAIT</span>
+                    <div class="drop-zone flex-1 border-2 border-dashed border-amber-500 rounded-lg bg-white/95 flex items-center justify-center text-amber-600 text-sm font-bold p-3 shadow-inner min-h-[54px]" id="drop-step2" data-expected="delay" data-text="วางคำสั่งหน่วงเวลา">วางคำสั่งหน่วงเวลา</div>
+                </div>
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="font-bold text-blue-300 text-lg w-16 text-right drop-shadow-sm">STEP 2</span>
+                    <div class="drop-zone flex-1 border-2 border-dashed border-blue-400 rounded-lg bg-white/95 flex items-center justify-center text-blue-700 text-sm font-bold p-3 shadow-inner min-h-[54px]" id="drop-step3" data-expected="action-scroll" data-text="วางคำสั่งที่ 2 (แบบเลื่อน)">วางคำสั่งที่ 2 (แบบเลื่อน)</div>
+                </div>
             </div>
         `;
     } else {
@@ -369,6 +396,45 @@ function evalAction(blockEl) {
     return { valid: true, type: aType, stat: stat, text: `${aType==="usb"?"USB":"LED"} = ${stat}` };
 }
 
+// Checklist Renderer & Attempt Tracker
+function renderChecklist(checksList) {
+    let listHtml = '';
+    let passedCount = 0;
+    checksList.forEach(c => {
+        if(c.passed) passedCount++;
+        let icon = c.passed ? '<span class="text-green-600 text-lg">✅</span>' : '<span class="text-red-500 text-lg">❌</span>';
+        let textClass = c.passed ? 'text-gray-700' : 'text-red-600 font-bold';
+        listHtml += `<div class="flex items-start gap-2">${icon} <span class="${textClass} leading-tight">${c.text}</span></div>`;
+    });
+    
+    document.getElementById('sim-checklist-items').innerHTML = listHtml;
+    
+    // Save score into userScores
+    userScores[currentLevel] = { score: passedCount, total: checksList.length, attempts: runAttempts[currentLevel] };
+
+    let scoreDiv = document.getElementById('sim-score-display');
+    let isPerfect = passedCount === checksList.length;
+    let attemptFeedback = "";
+    
+    // Display Logic for Scores & Attempts
+    if (isPerfect) {
+        scoreDiv.className = "mt-4 text-center font-bold py-3 rounded-lg bg-green-100 border-2 border-green-400 text-green-700";
+        if (runAttempts[currentLevel] === 1) {
+            attemptFeedback = `<div class="text-sm mt-1 font-medium text-green-600">🎉 ยอดเยี่ยมมาก! คุณผ่านภารกิจใน <b>การรันโค้ดครั้งแรก</b></div>`;
+        } else {
+            attemptFeedback = `<div class="text-sm mt-1 font-medium text-green-600">ผ่านภารกิจในความพยายาม <b>รันโค้ดครั้งที่ ${runAttempts[currentLevel]}</b></div>`;
+        }
+    } else {
+        scoreDiv.className = "mt-4 text-center font-bold py-3 rounded-lg bg-red-50 border-2 border-red-300 text-red-600";
+        attemptFeedback = `<div class="text-sm mt-1 font-medium text-red-500">จำนวนการรันโค้ด: <b>ครั้งที่ ${runAttempts[currentLevel]}</b> - ลองแก้ไขโค้ดดูใหม่นะ</div>`;
+    }
+    
+    scoreDiv.innerHTML = `<div class="text-xl">ผลประเมิน: ได้ ${passedCount} จาก ${checksList.length} เงื่อนไข</div>${attemptFeedback}`;
+
+    document.getElementById('sim-feedback-section').classList.remove('hidden');
+    return isPerfect;
+}
+
 // --- SIMULATION LOGIC ---
 function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
@@ -396,6 +462,9 @@ async function runSimulation() {
         return;
     }
 
+    // เมื่อกดรันโปรแกรมสำเร็จและครบช่อง ให้บวกจำนวนความพยายามเพิ่ม 1
+    runAttempts[currentLevel]++;
+
     const modal = document.getElementById('simModal');
     const logContainer = document.getElementById('sim-log-container');
     const iconEl = document.getElementById('sim-visual-icon');
@@ -403,6 +472,7 @@ async function runSimulation() {
     
     document.getElementById('sim-action-buttons').classList.add('hidden');
     document.getElementById('sim-close-x').classList.add('hidden');
+    document.getElementById('sim-feedback-section').classList.add('hidden');
     logContainer.innerHTML = '';
     
     const visContainer = document.getElementById('sim-visual-container');
@@ -415,7 +485,7 @@ async function runSimulation() {
     iconEl.className = 'text-6xl transition-all duration-700 transform scale-100 flex items-center justify-center w-full h-full text-center';
     iconEl.innerHTML = '⏳';
     textEl.innerText = 'กำลังส่งคำสั่ง...';
-    textEl.className = 'text-lg font-bold text-gray-500 h-8';
+    textEl.className = 'text-lg font-bold text-gray-500 h-8 mb-4';
     
     modal.classList.remove('hidden');
     modal.classList.add('flex');
@@ -429,12 +499,9 @@ async function runSimulation() {
             document.querySelector('#drop-step3 .block-item')
         ];
         
-        let structError = false, textError1 = false, textError2 = false;
-        
         for (let i = 0; i < 3; i++) {
             const stepEl = steps[i];
             const sType = stepEl.getAttribute('data-type');
-            
             let blockText = stepEl.innerText;
             let val = "";
             
@@ -445,7 +512,7 @@ async function runSimulation() {
                 logContainer.innerHTML += `<p class="mb-2 ${logColor} font-bold">▶ รันคำสั่งที่ ${i+1}: <span class="text-gray-700 font-normal">${blockText}</span></p>`;
                 iconEl.innerHTML = `<div class="led-screen"><span class="led-text">${val || " "}</span></div>`;
                 textEl.innerText = `เลื่อนข้อความ: ${val || "(ว่าง)"}`;
-                await sleep(3000);
+                await sleep(2500);
             } else if (sType === 'delay') {
                 val = stepEl.querySelector('input').value;
                 blockText = `Delay ${val} sec`;
@@ -456,37 +523,42 @@ async function runSimulation() {
             } else {
                 iconEl.innerHTML = '❓';
                 textEl.innerText = 'คำสั่งไม่รู้จัก (Error)';
-                await sleep(1500);
+                await sleep(1000);
             }
         }
 
-        if (steps[0].getAttribute('data-type') !== 'action-scroll' || 
-            steps[1].getAttribute('data-type') !== 'delay' || 
-            steps[2].getAttribute('data-type') !== 'action-scroll') {
-            structError = true;
-        }
+        // Check Rubric
+        let checks = [];
+        let s1Type = steps[0].getAttribute('data-type');
+        let s2Type = steps[1].getAttribute('data-type');
+        let s3Type = steps[2].getAttribute('data-type');
+        
+        checks.push({ 
+            text: "บล็อกคำสั่งเรียงลำดับถูกต้อง (LED Scroll -> Delay -> LED Scroll)", 
+            passed: (s1Type === 'action-scroll' && s2Type === 'delay' && s3Type === 'action-scroll') 
+        });
 
         let val1 = steps[0].querySelector('input') ? steps[0].querySelector('input').value.trim() : "";
+        checks.push({ 
+            text: "บล็อกที่ 1 แสดงข้อความคำว่า 'WELCOME' (ตัวพิมพ์ใหญ่ทั้งหมด)", 
+            passed: val1 === "WELCOME" 
+        });
+
+        let val2 = steps[1].querySelector('input') ? steps[1].querySelector('input').value : "";
+        checks.push({ 
+            text: "บล็อกหน่วงเวลา (Delay) ถูกตั้งค่าไว้เป็น 2 วินาที", 
+            passed: val2 === "2" 
+        });
+
         let val3 = steps[2].querySelector('input') ? steps[2].querySelector('input').value.trim() : "";
-
-        if (!structError) {
-            if (val1 !== "WELCOME") textError1 = true;
-            if (!/^[A-Za-z\s]+$/.test(val3) || val3.length < 1 || val3 === "WELCOME") textError2 = true;
-        }
-
-        isPerfect = !structError && !textError1 && !textError2;
+        let isEngName = /^[A-Za-z\s]+$/.test(val3) && val3.length > 0 && val3 !== "WELCOME";
+        checks.push({ 
+            text: "บล็อกที่ 3 แสดงชื่อเป็นภาษาอังกฤษ (ไม่ว่าง และไม่ซ้ำคำว่า WELCOME)", 
+            passed: isEngName 
+        });
 
         await sleep(500);
-        logContainer.innerHTML += `<hr class="my-3 border-gray-300"><p class="mb-1 text-gray-600 font-bold text-xs">▶ ผลการตรวจสอบความถูกต้อง...</p>`;
-        if (isPerfect) {
-            logContainer.innerHTML += `<p class="text-green-600 font-bold text-sm">✅ โค้ดสมบูรณ์ ลำดับและข้อความถูกต้อง!</p>`;
-        } else {
-            if (structError) logContainer.innerHTML += `<p class="text-red-600 font-bold text-sm">❌ โครงสร้างผิด (ต้องเรียง: LED Scroll -> Delay -> LED Scroll)</p>`;
-            else {
-                if (textError1) logContainer.innerHTML += `<p class="text-red-600 font-bold text-sm mb-1">❌ ข้อความแรกต้องเป็นคำว่า "WELCOME" แบบเป๊ะๆ</p>`;
-                if (textError2) logContainer.innerHTML += `<p class="text-red-600 font-bold text-sm">❌ ชื่อต้องเป็นภาษาอังกฤษเท่านั้น ห้ามเว้นว่าง และห้ามซ้ำกับ WELCOME</p>`;
-            }
-        }
+        isPerfect = renderChecklist(checks);
 
     } else if (data.workspaceType === 'dynamic-ifelse' && currentLevel === 2) {
         // LEVEL 2
@@ -502,13 +574,13 @@ async function runSimulation() {
         if (!c1.valid) {
             logContainer.innerHTML += `<p class="mb-2"><span class="text-indigo-500 font-bold">▶ ผลลัพธ์:</span> <span class="font-bold text-red-600">Error: ใส่บล็อกเซนเซอร์ผิดประเภท</span></p>`;
             iconEl.innerHTML = '💥'; iconEl.className += ' text-red-500 animate-bounce scale-125';
-            textEl.innerText = 'โปรแกรมพัง (Syntax Error)!'; textEl.className = 'text-lg font-bold h-8 text-red-500';
+            textEl.innerText = 'โปรแกรมพัง (Syntax Error)!'; textEl.className = 'text-lg font-bold h-8 text-red-500 mb-4';
         } else {
             logContainer.innerHTML += `<p class="mb-2"><span class="text-blue-500 font-bold">▶ ตรวจสอบ IF:</span> <span class="text-gray-700 font-normal">${c1.text}</span> (ปัจจุบัน ${testTemp})</p>`;
             await sleep(1000);
 
             logContainer.innerHTML += `<p class="mb-2"><span class="text-indigo-500 font-bold">▶ ผลลัพธ์เงื่อนไข:</span> <span class="font-bold ${c1.result ? 'text-green-600' : 'text-red-600'}">เป็น${c1.result ? 'จริง (TRUE)' : 'เท็จ (FALSE)'}</span></p>`;
-            await sleep(1200);
+            await sleep(1000);
 
             let executedEl = c1.result ? trueEl : falseEl;
             let executedZone = c1.result ? "DO (True)" : "ELSE DO (False)";
@@ -517,38 +589,49 @@ async function runSimulation() {
             if (!a.valid) {
                 logContainer.innerHTML += `<p><span class="text-green-500 font-bold">▶ รันคำสั่ง ${executedZone}:</span> <span class="font-bold text-red-600">Error: ไม่ใช่คำสั่งอุปกรณ์</span></p>`;
                 iconEl.innerHTML = '❓'; iconEl.className += ' text-orange-500 scale-125';
-                textEl.innerText = 'คำสั่งผิดพลาด (Error)!'; textEl.className = 'text-lg font-bold h-8 text-orange-500';
-                isPerfect = false;
+                textEl.innerText = 'คำสั่งผิดพลาด (Error)!'; textEl.className = 'text-lg font-bold h-8 text-orange-500 mb-4';
             } else {
                 logContainer.innerHTML += `<p><span class="text-green-500 font-bold">▶ รันคำสั่ง ${executedZone}:</span> <span class="bg-white px-1 border rounded text-gray-700 font-bold">${a.text}</span></p>`;
                 await sleep(800);
 
                 if (a.type === 'usb' && a.stat === 'ON') {
                     iconEl.innerHTML = '🌀'; iconEl.className += ' spin-fast text-blue-400 scale-125';
-                    textEl.innerText = 'พัดลมทำงาน! ระบายความร้อนเซิร์ฟเวอร์'; textEl.className = 'text-lg font-bold h-8 text-blue-500';
+                    textEl.innerText = 'พัดลมทำงาน! ระบายความร้อนเซิร์ฟเวอร์'; textEl.className = 'text-lg font-bold h-8 text-blue-500 mb-4';
                 } else if (a.type === 'usb' && a.stat === 'OFF') {
                     iconEl.innerHTML = '💥'; iconEl.className += ' text-red-500 animate-bounce scale-125';
-                    textEl.innerText = 'พัดลมปิด! เซิร์ฟเวอร์ Overheat!'; textEl.className = 'text-lg font-bold h-8 text-red-500';
+                    textEl.innerText = 'พัดลมปิด! เซิร์ฟเวอร์ Overheat!'; textEl.className = 'text-lg font-bold h-8 text-red-500 mb-4';
                 } else {
                     iconEl.innerHTML = '❓'; iconEl.className += ' text-orange-500 scale-125';
-                    textEl.innerText = 'สั่งอุปกรณ์ผิดประเภท!'; textEl.className = 'text-lg font-bold h-8 text-orange-500';
+                    textEl.innerText = 'สั่งอุปกรณ์ผิดประเภท!'; textEl.className = 'text-lg font-bold h-8 text-orange-500 mb-4';
                 }
             }
         }
 
-        // Strict check: Temp >= 25, True=USB ON, False=USB OFF
+        // Check Rubric
+        let checks = [];
+        checks.push({
+            text: "โครงสร้าง If-Do-Else วางได้อย่างถูกต้อง",
+            passed: document.getElementById('structure-ifelse-container') !== null
+        });
+        checks.push({
+            text: "เงื่อนไข: วางบล็อก Temperature และตั้งค่าเป็น >= 25",
+            passed: c1.valid && c1.type === 'temp' && c1.op === '>=' && c1.inputVal === '25'
+        });
+        
         let t1 = evalAction(trueEl);
-        let f1 = evalAction(falseEl);
-        isPerfect = c1.valid && c1.type === 'temp' && c1.op === '>=' && c1.inputVal === '25' &&
-                    t1.valid && t1.type === 'usb' && t1.stat === 'ON' &&
-                    f1.valid && f1.type === 'usb' && f1.stat === 'OFF';
+        checks.push({
+            text: "ช่อง DO (เป็นจริง): สั่งเปิดพัดลม (USB Status = ON)",
+            passed: t1.valid && t1.type === 'usb' && t1.stat === 'ON'
+        });
 
-        await sleep(1500);
-        logContainer.innerHTML += `<hr class="my-3 border-gray-300"><p class="mb-1 text-gray-600 font-bold text-xs">▶ ตรวจสอบความสมบูรณ์...</p>`;
-        logContainer.scrollTop = logContainer.scrollHeight;
+        let f1 = evalAction(falseEl);
+        checks.push({
+            text: "ช่อง ELSE (เป็นเท็จ): สั่งปิดพัดลม (USB Status = OFF)",
+            passed: f1.valid && f1.type === 'usb' && f1.stat === 'OFF'
+        });
+
         await sleep(500);
-        if (isPerfect) logContainer.innerHTML += `<p class="text-green-600 font-bold text-sm">✅ โค้ดและตัวเลขเงื่อนไขเป๊ะ 100%</p>`;
-        else logContainer.innerHTML += `<p class="text-red-600 font-bold text-sm">❌ มีข้อผิดพลาด (ตรวจสอบเครื่องหมาย >= ตัวเลข 25 และสถานะ USB ให้ตรงโจทย์)</p>`;
+        isPerfect = renderChecklist(checks);
 
     } else if (data.workspaceType === 'dynamic-ifelse' && currentLevel === 3) {
         // LEVEL 3
@@ -572,7 +655,7 @@ async function runSimulation() {
         if (!c1.valid || !c2.valid) {
             logContainer.innerHTML += `<p class="mb-2"><span class="font-bold text-red-600">Error: ลากบล็อกในช่องเซนเซอร์ผิดประเภท หรือไม่ครบ</span></p>`;
             iconEl.innerHTML = '💥'; iconEl.className += ' text-red-500 animate-bounce scale-125';
-            textEl.innerText = 'โปรแกรมพัง (Syntax Error)!'; textEl.className = 'text-lg font-bold h-8 text-red-500';
+            textEl.innerText = 'โปรแกรมพัง (Syntax Error)!'; textEl.className = 'text-lg font-bold h-8 text-red-500 mb-4';
         } else {
             logContainer.innerHTML += `<p class="mb-1 text-blue-500 text-xs">▶ เงื่อนไขที่ 1: <span class="text-gray-700">${c1.text} -> <b>${c1.result}</b></span></p>`;
             await sleep(800);
@@ -596,10 +679,10 @@ async function runSimulation() {
             if (!a1.valid || !a2.valid) {
                 logContainer.innerHTML += `<p><span class="font-bold text-red-600">Error: วางบล็อกสั่งการผิดประเภท</span></p>`;
                 iconEl.innerHTML = '❓'; iconEl.className += ' text-orange-500 scale-125';
-                textEl.innerText = 'คำสั่งผิดพลาด (Error)!'; textEl.className = 'text-lg font-bold h-8 text-orange-500';
+                textEl.innerText = 'คำสั่งผิดพลาด (Error)!'; textEl.className = 'text-lg font-bold h-8 text-orange-500 mb-4';
             } else {
                 logContainer.innerHTML += `<p><span class="text-green-500 font-bold">▶ รันคำสั่ง ${executedZone}:</span><br><span class="text-gray-700 text-xs">- ${a1.text}<br>- ${a2.text}</span></p>`;
-                await sleep(1000);
+                await sleep(800);
 
                 let showUsb = false, showLed = false;
                 let usbOn = false, ledOn = false;
@@ -617,52 +700,65 @@ async function runSimulation() {
 
                 if (showUsb && showLed) {
                     textEl.innerText = (usbOn && ledOn) ? "ห้องประชุมพร้อมใช้งาน 🏢" : "ห้องประชุมปิดมืด 🌑";
-                    textEl.className = (usbOn && ledOn) ? "text-lg font-bold h-8 text-green-600" : "text-lg font-bold h-8 text-gray-500";
+                    textEl.className = (usbOn && ledOn) ? "text-lg font-bold h-8 text-green-600 mb-4" : "text-lg font-bold h-8 text-gray-500 mb-4";
                 } else {
                     textEl.innerText = "สั่งอุปกรณ์ไม่ครบ ❓";
-                    textEl.className = "text-lg font-bold h-8 text-orange-500";
+                    textEl.className = "text-lg font-bold h-8 text-orange-500 mb-4";
                 }
             }
         }
-        logContainer.scrollTop = logContainer.scrollHeight;
+        
+        // Check Rubric
+        let checks = [];
+        checks.push({
+            text: "ใช้โครงสร้าง If-Do-Else และบล็อกตรรกะเชื่อมได้ถูกต้อง",
+            passed: document.getElementById('logic-and-container') !== null && logicOp === 'AND'
+        });
 
-        // Level 3 Strict Check
-        let isCondPerfect = false;
-        if (c1.valid && c2.valid) {
-            let condA = (c1.type === 'temp' && c1.op === '>' && c1.inputVal === '25' && c2.type === 'light' && c2.op === '<' && c2.inputVal === '40');
-            let condB = (c1.type === 'light' && c1.op === '<' && c1.inputVal === '40' && c2.type === 'temp' && c2.op === '>' && c2.inputVal === '25');
-            isCondPerfect = (condA || condB) && logicOp === 'AND';
-        }
+        let hasTempCond = (c1.valid && c1.type === 'temp' && c1.op === '>' && c1.inputVal === '25') || 
+                            (c2.valid && c2.type === 'temp' && c2.op === '>' && c2.inputVal === '25');
+        checks.push({
+            text: "เงื่อนไขย่อย 1: Temperature Sensor > 25",
+            passed: hasTempCond
+        });
+
+        let hasLightCond = (c1.valid && c1.type === 'light' && c1.op === '<' && c1.inputVal === '40') || 
+                            (c2.valid && c2.type === 'light' && c2.op === '<' && c2.inputVal === '40');
+        checks.push({
+            text: "เงื่อนไขย่อย 2: Light Level Sensor < 40",
+            passed: hasLightCond
+        });
 
         let t1 = evalAction(true1El), t2 = evalAction(true2El);
+        let isTruePerfect = (t1.valid && t2.valid) && 
+            ((t1.type === 'usb' && t1.stat === 'ON' && t2.type === 'led' && t2.stat === 'ON') ||
+                (t1.type === 'led' && t1.stat === 'ON' && t2.type === 'usb' && t2.stat === 'ON'));
+        checks.push({
+            text: "ช่อง DO: สั่ง USB Status=ON (แอร์) และ LED=ON (ไฟห้อง)",
+            passed: isTruePerfect
+        });
+
         let f1 = evalAction(false1El), f2 = evalAction(false2El);
+        let isFalsePerfect = (f1.valid && f2.valid) && 
+            ((f1.type === 'usb' && f1.stat === 'OFF' && f2.type === 'led' && f2.stat === 'OFF') ||
+                (f1.type === 'led' && f1.stat === 'OFF' && f2.type === 'usb' && f2.stat === 'OFF'));
+        checks.push({
+            text: "ช่อง ELSE: สั่ง USB Status=OFF และ LED=OFF",
+            passed: isFalsePerfect
+        });
 
-        let isTruePerfect = false;
-        if (t1.valid && t2.valid) {
-            isTruePerfect = (t1.type === 'usb' && t1.stat === 'ON' && t2.type === 'led' && t2.stat === 'ON') ||
-                            (t1.type === 'led' && t1.stat === 'ON' && t2.type === 'usb' && t2.stat === 'ON');
-        }
-
-        let isFalsePerfect = false;
-        if (f1.valid && f2.valid) {
-            isFalsePerfect = (f1.type === 'usb' && f1.stat === 'OFF' && f2.type === 'led' && f2.stat === 'OFF') ||
-                                (f1.type === 'led' && f1.stat === 'OFF' && f2.type === 'usb' && f2.stat === 'OFF');
-        }
-
-        isPerfect = isCondPerfect && isTruePerfect && isFalsePerfect;
-
-        await sleep(1500);
-        logContainer.innerHTML += `<hr class="my-3 border-gray-300"><p class="mb-1 text-gray-600 font-bold text-xs">▶ ตรวจสอบความสมบูรณ์...</p>`;
-        logContainer.scrollTop = logContainer.scrollHeight;
         await sleep(500);
-        if (isPerfect) logContainer.innerHTML += `<p class="text-green-600 font-bold text-sm">✅ โค้ดและตรรกะเงื่อนไขสมบูรณ์ 100%</p>`;
-        else logContainer.innerHTML += `<p class="text-red-600 font-bold text-sm">❌ มีข้อผิดพลาด (ตรวจสอบเงื่อนไข ตัวเลขตรรกะ และสถานะ On/Off ทั้งหมดให้เป๊ะๆ)</p>`;
-        logContainer.scrollTop = logContainer.scrollHeight;
+        isPerfect = renderChecklist(checks);
     }
 
     window.currentSimResult = isPerfect;
-    await sleep(2000); 
     
+    // Scroll logic so user sees feedback
+    setTimeout(() => {
+        const modalInner = document.querySelector('#simModal > div');
+        modalInner.scrollTo({ top: modalInner.scrollHeight, behavior: 'smooth' });
+    }, 300);
+
     document.getElementById('sim-action-buttons').classList.remove('hidden');
     document.getElementById('sim-close-x').classList.remove('hidden');
     
@@ -679,11 +775,20 @@ function closeSimulation(isSuccess) {
     const modal = document.getElementById('simModal');
     modal.classList.add('hidden');
     modal.classList.remove('flex');
-    if (isSuccess) { handleSuccess(); }
-    else { showToast("ยังไม่สมบูรณ์ ลองตรวจสอบและปรับตัวเลข/ข้อความอีกครั้งนะ!"); }
+    
+    if (isSuccess) { 
+        handleSuccess(); 
+    } else { 
+        showToast("ยังไม่ผ่านเงื่อนไขบางข้อ ลองดู Feedback และแก้ไขโค้ดใหม่นะ!"); 
+        // Re-render level selection to update scores
+        renderLevelSelect();
+    }
 }
 
 function handleSuccess() {
+    // Re-render to show updated score on map before moving on
+    renderLevelSelect();
+
     const modal = document.getElementById('successModal');
     const content = document.getElementById('modalContent');
     const btn = document.getElementById('next-level-btn');
@@ -698,11 +803,11 @@ function handleSuccess() {
     if (currentLevel === unlockedLevel && unlockedLevel < 3) unlockedLevel++;
 
     if (currentLevel < 3) {
-        document.getElementById('modal-desc').innerText = `ภารกิจที่ ${currentLevel} เสร็จสมบูรณ์! ตอนนี้คุณพร้อมสำหรับความท้าทายขั้นต่อไปแล้ว`;
+        document.getElementById('modal-desc').innerText = `ภารกิจที่ ${currentLevel} เสร็จสมบูรณ์! คุณทำคะแนนได้เต็ม`;
         btn.innerText = "ไปรับภารกิจถัดไป";
         btn.onclick = () => { closeModal(); startStory(currentLevel + 1); };
     } else {
-        document.getElementById('modal-desc').innerText = "ยินดีด้วย! คุณพิชิตภารกิจ Smart Office ครบทุกด่านแล้ว 🏆 คุณสามารถนำตรรกะนี้ไปเขียนโค้ดจริงใน KidBright ได้เลย";
+        document.getElementById('modal-desc').innerText = "ยินดีด้วย! คุณพิชิตภารกิจ Smart Office ครบทุกด่านด้วยคะแนนเต็ม 🏆";
         btn.innerText = "กลับหน้าเมนูหลัก";
         btn.onclick = () => { closeModal(); showView('view-home'); };
     }
