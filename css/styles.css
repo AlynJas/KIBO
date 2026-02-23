@@ -1,21 +1,15 @@
-.block-item { 
-    cursor: grab; 
-    transition: transform 0.2s, box-shadow 0.2s; 
-    width: fit-content;
-    margin: 0 auto;
-}
 .block-item:active { cursor: grabbing; transform: scale(0.95); }
 .block-item:hover { box-shadow: 0 6px 10px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
 
 .drop-zone { min-height: 54px; transition: all 0.2s; }
-.drop-zone.drag-over { background-color: #dcfce7 !important; border-color: #22c55e !important; border-width: 2px; border-style: dashed; }
+.drop-zone.drag-over { background-color: #dbeafe !important; border-color: #3b82f6 !important; border-width: 2px; border-style: dashed; }
 
 /* Block Colors */
-.logic-block { background-color: #a855f7; color: white; } /* Purple 500 for AND/OR */
-.structure-block { background-color: #9333ea; color: white; } /* Purple 600 for IF/DO/ELSE */
-.sensor-block { background-color: #ef4444; color: white; } 
-.action-block { background-color: #10b981; color: white; } 
-.delay-block { background-color: #f59e0b; color: white; } 
+.logic-block { background-color: #a855f7; color: white; } /* Purple for AND/OR */
+.structure-block { background-color: #9333ea; color: white; } /* Purple for IF/DO/ELSE */
+.sensor-block { background-color: #ef4444; color: white; } /* Red for Sensor */
+.action-block { background-color: #10b981; color: white; } /* Green for Action */
+.delay-block { background-color: #f59e0b; color: white; } /* Amber for Wait */
 
 .view-section { display: none; animation: fadeIn 0.4s ease-out; }
 .view-section.active { display: flex; }
@@ -31,7 +25,7 @@
 .glow-yellow { text-shadow: 0 0 20px #facc15, 0 0 40px #facc15; color: #facc15; }
 .dark-fade { color: #374151; opacity: 0.5; filter: grayscale(100%); }
 
-/* LED Screen Animation */
+/* LED Screen Animation for KidBright Simulator */
 .led-screen {
     background-color: #000;
     color: #ef4444; 
