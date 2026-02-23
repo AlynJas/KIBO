@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KIBO | Block Code</title>
+    <title>KIBO | Block Coding</title>
+    <link rel="icon" type="image" href="asset/Logo.png"/>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="css/styles.css" rel="stylesheet"/>  
-
+    <link href="css/styles.css" rel="stylesheet"/>
     <style>
-    body {
+        body {
             font-family: 'Prompt', sans-serif; background-color: #f0fdf4;
             background-color: #e0f2fe;
             background-image: url('asset/HomeBg.png'); 
@@ -29,27 +29,32 @@
             z-index: 0;
             pointer-events: none;
         }
+        .block-item { 
+            cursor: grab; 
+            transition: transform 0.2s, box-shadow 0.2s; 
+            width: fit-content;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8 flex flex-col items-center">
 
     <!-- 1. HOME SCREEN VIEW -->
     <div id="view-home" class="view-section active max-w-2xl w-full flex-col items-center justify-center text-center mt-10">
-        <div class="text-8xl mb-6">🌿</div>
-        <h1 class="text-4xl md:text-5xl font-bold text-white-700 mb-4" style="color: white; font-size: 145px;">KIBO</h1>
-        <p class="text-lg text-gray-600 mb-10 px-4" style="color: white;">ฝึกกระบวนการคิดและเขียนโปรแกรมแบบ Block Coding เพื่อควบคุมระบบฟาร์มอัจฉริยะ ตามระดับความท้าทาย</p>
-        <button onclick="showView('view-levels')" class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-10 rounded-full shadow-lg transition-transform transform hover:scale-105 text-xl">
-            เริ่มเกมเลย!
+        <h1 class="text-4xl md:text-5xl font-bold text-blue-700 mb-4" style="color: azure;">KIBO<br>Block Coding</h1>
+        <p class="text-lg text-gray-600 mb-10 px-4" style="color: rgb(214, 225, 240);">ฝึกกระบวนการคิดและเขียนโปรแกรมแบบ Block Coding เพื่อควบคุมระบบสำนักงานอัจฉริยะ ตามระดับความท้าทาย</p>
+        <button onclick="showView('view-levels')" style="background-color: rgb(84, 153, 255);" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-full shadow-lg transition-transform transform hover:scale-105 text-xl">
+            เริ่มทดสอบระบบ!
         </button>
     </div>
 
     <!-- 2. LEVEL SELECTION VIEW -->
     <div id="view-levels" class="view-section flex-col max-w-4xl w-full">
         <div class="flex justify-between items-center mb-8">
-            <button onclick="showView('view-home')" class="text-green-700 font-medium hover:text-green-900 flex items-center gap-1" style="color: white;">
+            <button onclick="showView('view-home')" style="color: azure;" class="text-blue-700 font-medium hover:text-blue-900 flex items-center gap-1">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg> กลับหน้าหลัก
             </button>
-            <h2 class="text-3xl font-bold text-gray-800 text-center" style="color: rgb(226, 207, 207);">เลือกระดับภารกิจ (Levels)</h2>
+            <h2 class="text-3xl font-bold text-gray-800 text-center" style="color: azure;">เลือกระดับภารกิจ (Levels)</h2>
             <div class="w-24"></div>
         </div>
         <div id="levels-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -58,9 +63,9 @@
     </div>
 
     <!-- 3. STORYTELLING VIEW -->
-    <div id="view-story" style="background: rgba(196, 201, 254, 0.447); backdrop-filter: blur(2px);" class="view-section flex-col items-center justify-center max-w-2xl w-full text-center mt-5 p-8 bg-slate-900 rounded-3xl shadow-2xl text-white min-h-[500px] border-4 border-slate-700">
-        <div class="text-7xl mb-4" id="story-icon">🌙</div>
-        <h2 class="text-3xl font-bold mb-8 text-blue-300" id="story-title" style="color: rgb(34, 76, 143);">Mission Briefing</h2>
+    <div id="view-story" style="background: rgba(156, 176, 237, 0.4); backdrop-filter: blur(2px);" class="view-section flex-col items-center justify-center max-w-2xl w-full text-center mt-5 p-8 bg-slate-900 rounded-3xl shadow-2xl text-white min-h-[500px] border-4 border-slate-700">
+        <div class="text-7xl mb-4" id="story-icon">🏢</div>
+        <h2 class="text-3xl font-bold mb-8 text-blue-300" id="story-title">Mission Briefing</h2>
         
         <div class="bg-black bg-opacity-50 p-6 rounded-xl border border-slate-600 min-h-[160px] w-full text-left font-mono text-lg leading-relaxed relative cursor-pointer" onclick="skipTypewriter()">
             <span id="story-text" class="text-green-400"></span><span id="story-cursor" class="cursor-blink font-bold">_</span>
@@ -73,35 +78,35 @@
     </div>
 
     <!-- 4. PUZZLE VIEW -->
-    <div id="view-puzzle" style="background: rgba(196, 201, 254, 0.447); backdrop-filter: blur(10px);" class="view-section flex-col max-w-6xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div class="bg-green-600 text-white p-4 flex justify-between items-center" style="background: rgba(76, 83, 167, 0.555);">
-            <button onclick="showView('view-levels')" class="text-green-100 hover:text-white flex items-center gap-1 text-sm font-medium">
+    <div id="view-puzzle" style="background: rgba(109, 130, 193, 0.4); backdrop-filter: blur(8px);" class="view-section flex-col max-w-6xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div class="bg-blue-600 text-white p-4 flex justify-between items-center" style="background: rgba(81, 111, 200, 0.427); backdrop-filter: blur(8px);">
+            <button onclick="showView('view-levels')" class="text-blue-100 hover:text-white flex items-center gap-1 text-sm font-medium">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg> เมนูด่าน
             </button>
             <h1 id="puzzle-title" class="text-xl font-bold">ภารกิจที่...</h1>
-            <button onclick="startStory(currentLevel)" class="text-green-100 hover:text-white flex items-center gap-1 text-sm font-medium">อ่านภารกิจอีกครั้ง</button>
+            <button onclick="startStory(currentLevel)" class="text-blue-100 hover:text-white flex items-center gap-1 text-sm font-medium">อ่านภารกิจอีกครั้ง</button>
         </div>
 
         <div class="p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
             <!-- Left Column: Instructions & Blocks -->
-            <div class="bg-gray-50 p-5 rounded-xl border border-gray-200 flex flex-col lg:col-span-5 h-full">
-                <h2 class="text-lg font-semibold mb-2 text-gray-800">1. เป้าหมาย (Goal)</h2>
-                <p id="puzzle-desc" class="text-sm text-gray-700 mb-5 font-medium bg-white p-4 rounded border-l-4 border-green-500 shadow-sm leading-relaxed"></p>
+            <div class="bg-gray-50 p-5 rounded-xl border border-gray-200 flex flex-col lg:col-span-5 h-full" style="background: rgba(78, 107, 193, 0.374); backdrop-filter: blur(8px); color: azure;">
+                <h2 class="text-lg font-semibold mb-2 text-gray-800" style="color: azure;">1. เป้าหมาย (Goal)</h2>
+                <p id="puzzle-desc" class="text-sm text-white-700 mb-5 font-medium bg-white p-4 rounded border-l-4 border-blue-500 shadow-sm leading-relaxed" style="background: rgba(3, 13, 43, 0.459); backdrop-filter: blur(10px);"></p>
                 
-                <h2 class="text-lg font-semibold mb-3 text-gray-800">2. ลากบล็อกคำสั่งไปวาง</h2>
-                <div class="flex flex-col gap-3 flex-1 bg-gray-100 p-4 rounded-lg border-2 border-dashed border-gray-300 overflow-y-auto max-h-[500px]" id="block-container">
+                <h2 class="text-lg font-semibold mb-3 text-gray-800" style="color: azure;">2. ลากบล็อกคำสั่งไปวาง</h2>
+                <div class="flex flex-col gap-3 flex-1 bg-gray-100 p-4 rounded-lg border-2 border-dashed border-gray-300 overflow-y-auto max-h-[500px]" id="block-container" style="background: rgba(3, 13, 43, 0.459); backdrop-filter: blur(10px);">
                     <!-- Draggable Blocks generated by JS -->
                 </div>
             </div>
 
             <!-- Right Column: Dynamic Workspace -->
-            <div class="bg-blue-50 p-5 rounded-xl border border-blue-200 flex flex-col lg:col-span-7 h-full">
-                <h2 class="text-xl font-semibold mb-4 text-blue-800 flex items-center gap-2">
+            <div class="bg-blue-50 p-5 rounded-xl border border-blue-200 flex flex-col lg:col-span-7 h-full" style="background: rgba(78, 107, 193, 0.374); backdrop-filter: blur(8px);">
+                <h2 class="text-xl font-semibold mb-4 text-blue-800 flex items-center gap-2" style="color: azure;">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
                     3. พื้นที่ทำงาน (Workspace)
                 </h2>
                 
-                <div id="workspace-container" class="bg-white border-2 border-blue-400 rounded-xl p-4 shadow-inner flex-1 flex flex-col justify-start min-h-[400px]">
+                <div id="workspace-container" class="bg-white border-2 border-blue-400 rounded-xl p-4 shadow-inner flex-1 flex flex-col justify-start min-h-[400px]" style="background: rgba(3, 13, 43, 0.459); backdrop-filter: blur(10px); color: #e0f2fe;">
                     <!-- HTML structure dynamically injected here based on level type -->
                 </div>
 
@@ -136,7 +141,7 @@
 
              <div id="sim-action-buttons" class="mt-4 w-full flex gap-3 hidden">
                  <button id="sim-btn-retry" onclick="closeSimulation(false)" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg transition-colors hidden">ปิด (แก้ไขโค้ดใหม่)</button>
-                 <button id="sim-btn-next" onclick="closeSimulation(true)" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors hidden shadow-md">ดำเนินการต่อ</button>
+                 <button id="sim-btn-next" onclick="closeSimulation(true)" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors hidden shadow-md">ดำเนินการต่อ</button>
              </div>
         </div>
     </div>
@@ -144,13 +149,13 @@
     <!-- Success Modal -->
     <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden justify-center items-center">
         <div class="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl transform transition-all scale-95 opacity-0 duration-300" id="modalContent">
-            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
-                <svg class="h-10 w-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-6">
+                <svg class="h-10 w-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
             </div>
             <h3 class="text-2xl font-bold text-gray-900 mb-2">ยอดเยี่ยมมาก!</h3>
             <p id="modal-desc" class="text-gray-600 mb-6">ตรรกะถูกต้อง คุณผ่านด่านนี้แล้ว!</p>
-            <button id="next-level-btn" onclick="goToNextLevel()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow transition-colors mb-2">ไปด่านถัดไป</button>
-            <button onclick="window.open('https://simulator.kid-bright.org/home', '_blank')" class="w-full bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-3 px-4 rounded-lg shadow-sm transition-colors text-sm">นำไปเขียนใน KidBright IDE</button>
+            <button id="next-level-btn" onclick="goToNextLevel()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow transition-colors mb-2">ไปด่านถัดไป</button>
+            <button onclick="window.open('https://simulator.kidbright.space/', '_blank')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded-lg shadow-sm transition-colors text-sm">นำไปเขียนใน KidBright IDE</button>
         </div>
     </div>
 
