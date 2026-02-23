@@ -116,7 +116,7 @@ function renderLevelSelect() {
 
 function startStory(level) {
     currentLevel = level;
-    //runAttempts[level] = 0; // รีเซ็ตการนับจำนวนครั้งเมื่อเริ่มเล่นด่านใหม่
+
     
     const data = levelsData[level];
     
@@ -852,4 +852,5 @@ function showToast(message) {
 
 // Init
 renderLevelSelect();
+
 
