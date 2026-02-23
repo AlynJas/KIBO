@@ -260,6 +260,7 @@ function preparePuzzle(level) {
             el.innerHTML = b.html;
             el.querySelectorAll('select, input').forEach(child => {
                 child.onmousedown = (e) => e.stopPropagation();
+                child.ontouchstart = (e) => e.stopPropagation();
                 child.onfocus = () => el.draggable = false;
                 child.onblur = () => el.draggable = true;
             });
@@ -833,4 +834,3 @@ function showToast(message) {
 
 // Init
 renderLevelSelect();
-
